@@ -696,7 +696,7 @@
             <div class="crisis-overlay" id="crisis-overlay">
                 <div class="crisis-box">
                     <div class="crisis-title" id="crisis-title">⚠️ SYTUACJA AWARYJNA</div>
-                    <div class="crisis-desc" id="crisis-desc">Ktoś próbuje wejść na backstage bez opaski i twierdzi, że zna DJ-a. Co robisz?</div>
+                    <div class="crisis-desc" id="crisis-desc">...</div>
                     <div class="crisis-options" id="crisis-options-box"></div>
                     <div class="crisis-timer-container">
                         <div class="crisis-timer-bar" id="crisis-timer-bar"></div>
@@ -964,6 +964,36 @@
                     } },
                     { text: "Zagadaj ich przez mikrofon i rzuć darmowe kupony na bar", effect: () => { player.cash -= 40; crowdTrust += 5; return "Przekupstwo podziałało. Odeszli z uśmiechem (-40 PLN)."; } }
                 ]
+            },
+            {
+                text: "Ktoś z publiki wylewa pełny kubek piwa prosto na Twój mikser! Sprzęt zaczyna wariować.",
+                options: [
+                    { text: "Natychmiast przetrzyj mikser koszulką i graj dalej", effect: () => { crowdEnergy -= 5; return "Przetarte w porę. Decki działają, chociaż tłum zauważył krótkie ucięcie dźwięku."; } },
+                    { text: "Przełącz awaryjnie sygnał bezpośrednio z telefonu na nagłośnienie", effect: () => { crowdEnergy -= 20; crowdTrust += 10; return "Uratowałeś muzykę puszczając playlistę, ale miksowanie na żywo uległo zatrzymaniu."; } },
+                    { text: "Zrób raban na mikrofonie i każ ochronie złapać sprawcę", effect: () => { crowdEnergy += 10; crowdTrust -= 15; return "Agresywny klimat na sali! Publika klaszcze z powodu dramy, ale klimat prysł."; } }
+                ]
+            },
+            {
+                text: "Agregat prądotwórczy nie wytrzymuje obciążenia oświetlenia i laserów. Napięcie drastycznie spada!",
+                options: [
+                    { text: "Wyłącz lasery i stroboskopy – zostaw tylko muzykę", effect: () => { crowdEnergy -= 8; return "W klubie zrobiło się ciemno, ale bas wciąż uderza bez przeszkód."; } },
+                    { text: "Zaryzykuj i graj bez zmian, licząc na stabilizację", effect: () => { 
+                        if(Math.random() > 0.5) { crowdEnergy += 15; return "Napięcie wróciło do normy! Lasery i muzyka stworzyły niesamowity pokaz."; } 
+                        else { crowdEnergy -= 30; return "Pełne odcięcie prądu na 15 sekund! Ciemność i kompletna cisza na sali."; }
+                    } },
+                    { text: "Zwolnij tempo muzyki (BPM) by odciążyć system", effect: () => { crowdTrust -= 12; return "Tłum zgubił rytm tańca przez nagłe i dziwne zwolnienie utworu."; } }
+                ]
+            },
+            {
+                text: "Główny promotor wpada przerażony na backstage: 'Policja stoi przed wejściem przez skargi na hałas!'.",
+                options: [
+                    { text: "Zgódź się skrócić set o 5 minut w zamian za spokój", effect: () => { currentGig.totalTracks = Math.max(currentTrackIndex + 1, currentGig.totalTracks - 1); return "Skróciłeś imprezę, policja odpuszcza, fani lekko zawiedzeni."; } },
+                    { text: "Zejdź z basu, podbij wokale (zakamufluj hałas na zewnątrz)", effect: () => { crowdEnergy -= 12; crowdTrust += 5; return "Klubowicze falują łagodniej, patrol odjeżdża zadowolony z uciszenia."; } },
+                    { text: "Zaryzykuj i graj na pełnej mocy do samego końca!", effect: () => { 
+                        if(Math.random() > 0.3) { player.cash -= 150; return "Wlepili karę porządkową dla organizatora (-150 PLN), ale set stał się legendą."; } 
+                        else { crowdEnergy += 20; return "Odeszli bez interwencji! Tłum poczuł buntowniczy charakter nocy!"; }
+                    } }
+                ]
             }
         ];
 
@@ -985,6 +1015,9 @@
         
         let currentTrackIndex = 1;
         let totalTracksInSet = 5;
+        
+        // Dynamiczna pula kryzysów zapobiegająca powtórzeniom
+        let activeCrisesPool = [];
 
         window.onload = function() { loadGame(); switchTab('map'); };
 
@@ -1131,14 +1164,26 @@
             let range = GENRE_BPM_RANGES[genreKey];
             let randomBpm = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
             
+            // Konfiguracja zróżnicowanych nagród EXP i REPUTACJI zależnie od wybranego miejsca
+            let hostedExp = 400;
+            let hostedRep = 200;
+            
+            if (locId === 'schron') {
+                hostedExp = 700;
+                hostedRep = 400;
+            } else if (locId === 'tama') {
+                hostedExp = 1000;
+                hostedRep = 600;
+            }
+            
             currentGig = {
                 name: `Własny Event: Otchłań // ${range.name.toUpperCase()}`,
                 targetBpm: randomBpm,
                 basePay: revenue, 
                 attendance: finalAttendance,
                 totalTracks: originalLoc.totalTracks + 2,
-                rewardExp: originalLoc.rewardExp,
-                rewardRep: originalLoc.rewardRep
+                rewardExp: hostedExp,
+                rewardRep: hostedRep
             };
             
             isHostedEvent = true;
@@ -1173,6 +1218,9 @@
             let extraHitbox = getEffectiveStat('timing') * 1.3;
             hitboxZone.style.width = `${18 + extraHitbox}%`;
             hitboxZone.style.left = `${72 - (extraHitbox/2)}%`;
+
+            // Resetowanie i klonowanie pełnej puli kryzysów dla bieżącej lokacji/imprezy
+            activeCrisesPool = [...CRISIS_EVENTS];
 
             randomizeRequiredAction();
             updateCrowdUI();
@@ -1235,7 +1283,15 @@
 
         function triggerCrisisQuestion() {
             isCrisisActive = true;
-            const crisis = CRISIS_EVENTS[Math.floor(Math.random() * CRISIS_EVENTS.length)];
+            
+            // Zabezpieczenie przed brakiem kryzysów w puli
+            if (activeCrisesPool.length === 0) {
+                activeCrisesPool = [...CRISIS_EVENTS];
+            }
+
+            // Losowanie i bezpowrotne usuwanie z puli na czas trwania aktualnego seta
+            const randomIndex = Math.floor(Math.random() * activeCrisesPool.length);
+            const crisis = activeCrisesPool.splice(randomIndex, 1)[0];
             
             document.getElementById('crisis-desc').innerText = crisis.text;
             const optionsBox = document.getElementById('crisis-options-box');
@@ -1321,6 +1377,7 @@
                 logMessage('dj', `> [TRAKTOR] Konie mechaniczne! Rozjazd rytmiczny.`);
             }
 
+            // Losowe kryzysy wyskakują na 2 oraz 5 utworze w secie
             if (isHostedEvent && (currentTrackIndex === 2 || currentTrackIndex === 5)) {
                 setTimeout(() => { triggerCrisisQuestion(); }, 800);
             }
@@ -1391,7 +1448,6 @@
 
                 alert(`🎉 SET SKOŃCZONY SUKCESEM!\n\nZagrane numery: ${totalTracksInSet}/${totalTracksInSet}\nFrekwencja: ${currentGig.attendance} osób\nZarobek: +${payout} PLN\nEXP: +${currentGig.rewardExp}\nReputacja: +${currentGig.rewardRep} pkt`);
                 
-                // Automatyczny zapis po udanym secie (opcjonalny komfort dla gracza)
                 localStorage.setItem('otchlan_game_save', JSON.stringify({ player, boughtItems }));
             } else {
                 player.rep = Math.max(0, player.rep - 20);
@@ -1563,7 +1619,6 @@
                     if (parsedData.player) player = parsedData.player;
                     if (parsedData.boughtItems) boughtItems = parsedData.boughtItems;
                     
-                    // Bezpieczna weryfikacja brakujących pól w przypadku przyszłych aktualizacji struktury
                     if (!player.lifetimeStats) {
                         player.lifetimeStats = { gigsPlayed: 0, eventsHosted: 0, totalCashEarned: player.cash };
                     }

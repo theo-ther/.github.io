@@ -393,7 +393,6 @@
             transition: width 0.3s;
         }
 
-        /* STYL OKNA PYTAŃ KRYZYSOWYCH (POPUP) */
         .crisis-overlay {
             display: none;
             position: absolute;
@@ -655,6 +654,7 @@
             <button class="tab-btn" id="btn-rpg" onclick="switchTab('rpg')">MOJA POSTAĆ</button>
             <button class="tab-btn" id="btn-shop" onclick="switchTab('shop')">SKLEP MUZYCZNY</button>
             <button class="tab-btn" id="btn-event" onclick="switchTab('event')">WŁASNY EVENT</button>
+            <button class="tab-btn" id="btn-festiwal" onclick="switchTab('festiwal')">FESTIWAL</button>
         </nav>
 
         <section id="view-map" class="view-section active">
@@ -689,7 +689,7 @@
                     <span>Wym. Rep: 1500</span>
                 </div>
             </div>
-            <div class="logs-box" id="map-logs">> Paszport aktywowany. Wybierz miejsce na krytyczny set.</div>
+            <div class="logs-box" id="map-logs">> Kluby otwarto. Wybierz miejsce do zagrania seta.</div>
         </section>
 
         <section id="view-djdeck" class="view-section">
@@ -697,8 +697,7 @@
                 <div class="crisis-box">
                     <div class="crisis-title" id="crisis-title">⚠️ SYTUACJA AWARYJNA</div>
                     <div class="crisis-desc" id="crisis-desc">Ktoś próbuje wejść na backstage bez opaski i twierdzi, że zna DJ-a. Co robisz?</div>
-                    <div class="crisis-options" id="crisis-options-box">
-                        </div>
+                    <div class="crisis-options" id="crisis-options-box"></div>
                     <div class="crisis-timer-container">
                         <div class="crisis-timer-bar" id="crisis-timer-bar"></div>
                     </div>
@@ -809,7 +808,6 @@
         </section>
 
         <section id="view-event" class="view-section">
-            
             <div id="event-locked-box" style="text-align: center; padding: 60px 20px;">
                 <h2 class="neon-text" style="color: var(--neon-pink); font-size: 2rem; margin-bottom: 20px;">🔒 OPCJA ZABLOKOWANA</h2>
                 <p style="font-size: 1.1rem; color: var(--muted-text); max-width: 500px; margin: 0 auto; line-height: 1.6;">
@@ -824,18 +822,18 @@
                 <div class="form-group">
                     <label>Wybierz lokację pod własną markę:</label>
                     <select id="event-location" onchange="updateEventEstimates()">
-                        <option value="lazarz">Piwnica na Łazarzu (Wynajem: 50 PLN, Bilet: 10 PLN)</option>
-                        <option value="domtechnika">Dom Technika (Wynajem: 300 PLN, Bilet: 25 PLN)</option>
-                        <option value="schron">Schron (Wynajem: 800 PLN, Bilet: 40 PLN)</option>
+                        <option value="domtechnika">Dom Technika (Wynajem: 2000 PLN, Bilet: 25 PLN)</option>
+                        <option value="schron">Schron (Wynajem: 5000 PLN, Bilet: 40 PLN)</option>
+                        <option value="tama">Tama (Wynajem: 15000 PLN, Bilet: 55 PLN)</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>Budżet na promocję:</label>
                     <select id="event-promo" onchange="updateEventEstimates()">
-                        <option value="low">Szeptany marketing po znajomych (Koszt: 20 PLN | Słaba frekwencja)</option>
-                        <option value="mid">Plakatowanie miasta + wlepy (Koszt: 100 PLN | Średnia frekwencja)</option>
-                        <option value="high">Agresywna kampania w socialach (Koszt: 300 PLN | Maksymalna frekwencja)</option>
+                        <option value="low">Szeptany marketing po znajomych (Koszt: 100 PLN)</option>
+                        <option value="mid">Plakatowanie miasta + wlepy (Koszt: 500 PLN)</option>
+                        <option value="high">Agresywna kampania w socialach (Koszt: 1000 PLN)</option>
                     </select>
                 </div>
 
@@ -851,12 +849,28 @@
 
                 <div class="summary-box">
                     <strong>SZACOWANE REZULTATY FINANSOWE (Otrzymasz 50% zysku z bramki):</strong><br><br>
-                    Koszt produkcji (płatne z góry): <span id="event-cost" style="color: var(--neon-pink)">70 PLN</span><br>
-                    Szacowana frekwencja: <span id="event-predicted-guests" style="color: var(--neon-cyan)">15-25 osób</span><br>
-                    Twój maksymalny zysk: <span id="event-predicted-profit" style="color: #00ff66">~250 PLN</span>
+                    Koszt produkcji (płatne z góry): <span id="event-cost" style="color: var(--neon-pink)">0 PLN</span><br>
+                    Szacowana frekwencja: <span id="event-predicted-guests" style="color: var(--neon-cyan)">0 osób</span><br>
+                    Twój maksymalny zysk: <span id="event-predicted-profit" style="color: #00ff66">~0 PLN</span>
                 </div>
 
                 <button class="dj-btn btn-block" style="margin-top: 25px; border-color: var(--neon-cyan);" onclick="launchHostedEvent()">🔥 ODPAL EVENT "OTCHŁAŃ"</button>
+            </div>
+        </section>
+
+        <section id="view-festiwal" class="view-section">
+            <div id="festiwal-locked-box" style="text-align: center; padding: 60px 20px;">
+                <h2 class="neon-text" style="color: var(--neon-pink); font-size: 2rem; margin-bottom: 20px;">🔒 OPCJA ZABLOKOWANA</h2>
+                <p style="font-size: 1.1rem; color: var(--muted-text); max-width: 500px; margin: 0 auto; line-height: 1.6;">
+                    Festiwal Otchłani jest dostępny tylko dla najbardziej elitarnych i doświadczonych artystów sceny undergroundowej.<br><br>
+                    <strong style="color: var(--neon-cyan); font-size: 1.2rem;">WYMAGANY POZIOM DJ-a: 20</strong>
+                </p>
+            </div>
+            <div id="festiwal-unlocked-box" style="display: none; max-width: 700px; margin: 0 auto; background: #11071c; border: 2px solid var(--neon-cyan); padding: 30px; border-radius: 4px; box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);">
+                <h2 class="neon-text" style="color: var(--neon-cyan); text-align: center; margin-bottom: 20px; font-size: 1.8rem; letter-spacing: 3px;">✨ WEJŚCIÓWKA NA FESTIWAL ✨</h2>
+                <p style="font-size: 1.1rem; line-height: 1.8; color: #fff; text-align: justify; background: #050208; padding: 20px; border-left: 4px solid var(--neon-pink);">
+                    Gratulacje! Otrzymałeś unikatową okazję wzięcia udziału w festiwalu Otchłani dla siebie i twojej osoby towarzyszącej, zaobserwuj i wyślij wiadomość DM na profil Otchłani (<a href="https://www.instagram.com/otchlan.exe/" target="_blank" style="color: var(--neon-cyan); text-decoration: underline;">https://www.instagram.com/otchlan.exe/</a>) podając ten kod: <strong style="color: var(--neon-pink); font-family: monospace; font-size: 1.2rem;">YiwDt]X=+)=YL0F(</strong> aby wziąć udział w losowaniu.
+                </p>
             </div>
         </section>
     </div>
@@ -896,10 +910,22 @@
         };
 
         const LOCATIONS = {
-            lazarz: { name: "Piwnica na Łazarzu", reqRep: 0, basePpl: 30, basePay: 70, bpmMin: 135, bpmMax: 142, ticketPrice: 10, totalTracks: 5 },
-            domtechnika: { name: "Dom Technika", reqRep: 150, basePpl: 100, basePay: 300, bpmMin: 168, bpmMax: 174, ticketPrice: 25, totalTracks: 7 },
-            schron: { name: "Schron", reqRep: 600, basePpl: 250, basePay: 800, bpmMin: 140, bpmMax: 145, ticketPrice: 40, totalTracks: 10 },
-            tama: { name: "Tama", reqRep: 1500, basePpl: 550, basePay: 2000, bpmMin: 172, bpmMax: 178, ticketPrice: 55, totalTracks: 12 }
+            lazarz: { name: "Piwnica na Łazarzu", reqRep: 0, basePpl: 30, basePay: 70, bpmMin: 135, bpmMax: 142, ticketPrice: 10, totalTracks: 5, rewardExp: 100, rewardRep: 50 },
+            domtechnika: { name: "Dom Technika", reqRep: 150, basePpl: 100, basePay: 300, bpmMin: 168, bpmMax: 174, ticketPrice: 25, totalTracks: 7, rewardExp: 200, rewardRep: 100 },
+            schron: { name: "Schron", reqRep: 600, basePpl: 250, basePay: 800, bpmMin: 140, bpmMax: 145, ticketPrice: 40, totalTracks: 10, rewardExp: 300, rewardRep: 150 },
+            tama: { name: "Tama", reqRep: 1500, basePpl: 550, basePay: 2000, bpmMin: 172, bpmMax: 178, ticketPrice: 55, totalTracks: 12, rewardExp: 400, rewardRep: 200 }
+        };
+
+        const EVENT_LOC_CONFIGS = {
+            domtechnika: { rent: 2000, minPpl: 50, maxPpl: 250, ticket: 25 },
+            schron: { rent: 5000, minPpl: 150, maxPpl: 500, ticket: 40 },
+            tama: { rent: 15000, minPpl: 400, maxPpl: 1500, ticket: 55 }
+        };
+
+        const EVENT_PROMO_CONFIGS = {
+            low: { cost: 100, spanMin: 0.0, spanMax: 0.35 },
+            mid: { cost: 500, spanMin: 0.3, spanMax: 0.75 },
+            high: { cost: 1000, spanMin: 0.7, spanMax: 1.0 }
         };
 
         const GENRE_BPM_RANGES = {
@@ -909,7 +935,6 @@
             dubstep: { name: "Deep Dubstep", min: 140, max: 142 }
         };
 
-        // BAZA PYTAŃ KRYZYSOWYCH DLA WŁASNYCH EVENTÓW
         const CRISIS_EVENTS = [
             {
                 text: "Ktoś awanturuje się przy bramce: 'Zapomniałem portfela, ale wejdę bez opaski, znam DJ-a!'. Co robisz?",
@@ -964,7 +989,6 @@
         window.onload = function() { loadGame(); switchTab('map'); };
 
         function switchTab(tabId) {
-            // Zabezpieczenie przed ucieczką z imprezy
             if (currentGig !== null && !isCrisisActive) {
                 alert("Nie możesz zmienić zakładki w trakcie grania! Zakończ seta lub uciekaj z klubu.");
                 return;
@@ -981,7 +1005,6 @@
             if (tabId === 'shop') renderShop();
             if (tabId === 'rpg') renderRpgEquipment();
             if (tabId === 'event') {
-                // Wyświetlamy odpowiedni box z eventami na podstawie poziomu gracza
                 if (player.level >= 10) {
                     document.getElementById('event-locked-box').style.display = 'none';
                     document.getElementById('event-unlocked-box').style.display = 'block';
@@ -989,6 +1012,15 @@
                 } else {
                     document.getElementById('event-locked-box').style.display = 'block';
                     document.getElementById('event-unlocked-box').style.display = 'none';
+                }
+            }
+            if (tabId === 'festiwal') {
+                if (player.level >= 20) {
+                    document.getElementById('festiwal-locked-box').style.display = 'none';
+                    document.getElementById('festiwal-unlocked-box').style.display = 'block';
+                } else {
+                    document.getElementById('festiwal-locked-box').style.display = 'block';
+                    document.getElementById('festiwal-unlocked-box').style.display = 'none';
                 }
             }
             updateHUD();
@@ -1003,7 +1035,6 @@
             if (player.rep >= 600) document.getElementById('node-schron').classList.remove('locked');
             if (player.rep >= 1500) document.getElementById('node-tama').classList.remove('locked');
 
-            // Wizualne odblokowanie przycisku WŁASNY EVENT na górnym pasku
             const eventBtn = document.getElementById('btn-event');
             if (eventBtn) {
                 if (player.level < 10) {
@@ -1011,7 +1042,18 @@
                     eventBtn.style.color = "var(--neon-pink)";
                 } else {
                     eventBtn.innerText = "ZORGANIZUJ EVENT";
-                    eventBtn.style.color = ""; // reset do domyślnego CSS
+                    eventBtn.style.color = ""; 
+                }
+            }
+
+            const festiwalBtn = document.getElementById('btn-festiwal');
+            if (festiwalBtn) {
+                if (player.level < 20) {
+                    festiwalBtn.innerText = "FESTIWAL (OD 20 LVL)";
+                    festiwalBtn.style.color = "var(--neon-pink)";
+                } else {
+                    festiwalBtn.innerText = "FESTIWAL";
+                    festiwalBtn.style.color = "";
                 }
             }
         }
@@ -1047,40 +1089,44 @@
                 targetBpm: randomBpm,
                 basePay: loc.basePay,
                 attendance: Math.floor(loc.basePpl * (0.9 + Math.random() * 0.2)),
-                totalTracks: loc.totalTracks
+                totalTracks: loc.totalTracks,
+                rewardExp: loc.rewardExp,
+                rewardRep: loc.rewardRep
             };
             isHostedEvent = false;
             setupDeckView(currentGig.name, currentGig.targetBpm, currentGig.totalTracks);
         }
 
         function launchHostedEvent() {
-            // Twarde zabezpieczenie na wypadek zhakowania przycisku
             if (player.level < 10) {
                 alert("Twój poziom doświadczenia jest za mały! Wymagany poziom: 10.");
                 return;
             }
 
             const locId = document.getElementById('event-location').value;
-            const promo = document.getElementById('event-promo').value;
+            const promoKey = document.getElementById('event-promo').value;
             const genreKey = document.getElementById('event-genre').value;
-            const loc = LOCATIONS[locId];
             
-            let rentalCost = locId === 'lazarz' ? 50 : (locId === 'domtechnika' ? 300 : 800);
-            let promoCost = promo === 'low' ? 20 : (promo === 'mid' ? 100 : 300);
-            let totalCost = rentalCost + promoCost;
+            const locConfig = EVENT_LOC_CONFIGS[locId];
+            const promoConfig = EVENT_PROMO_CONFIGS[promoKey];
+            const originalLoc = LOCATIONS[locId]; 
 
-            if (player.cash < totalCost) { alert("Brak kasy na produkcję imprezy!"); return; }
+            let totalCost = locConfig.rent + promoConfig.cost;
+
+            if (player.cash < totalCost) { 
+                alert("Brak kasy na produkcję imprezy!"); 
+                return; 
+            }
 
             player.cash -= totalCost;
             player.lifetimeStats.eventsHosted++;
 
-            let promoMultiplier = promo === 'low' ? 0.4 : (promo === 'mid' ? 1.1 : 2.2);
-            let finalAttendance = Math.floor(loc.basePpl * promoMultiplier * (0.85 + Math.random() * 0.3));
-            
-            let maxCapacity = loc.basePpl * 2.5;
-            if(finalAttendance > maxCapacity) finalAttendance = Math.floor(maxCapacity);
+            let span = locConfig.maxPpl - locConfig.minPpl;
+            let estMin = Math.floor(locConfig.minPpl + span * promoConfig.spanMin);
+            let estMax = Math.floor(locConfig.minPpl + span * promoConfig.spanMax);
 
-            let revenue = finalAttendance * loc.ticketPrice;
+            let finalAttendance = Math.floor(estMin + Math.random() * (estMax - estMin + 1));
+            let revenue = finalAttendance * locConfig.ticket;
 
             let range = GENRE_BPM_RANGES[genreKey];
             let randomBpm = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
@@ -1090,7 +1136,9 @@
                 targetBpm: randomBpm,
                 basePay: revenue, 
                 attendance: finalAttendance,
-                totalTracks: loc.totalTracks + 2 
+                totalTracks: originalLoc.totalTracks + 2,
+                rewardExp: originalLoc.rewardExp,
+                rewardRep: originalLoc.rewardRep
             };
             
             isHostedEvent = true;
@@ -1098,7 +1146,6 @@
         }
 
         function setupDeckView(title, targetBpm, totalTracks) {
-            // Przejście z pominięciem logiki switchTab, bo gramy
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('view-djdeck').classList.add('active');
@@ -1274,7 +1321,6 @@
                 logMessage('dj', `> [TRAKTOR] Konie mechaniczne! Rozjazd rytmiczny.`);
             }
 
-            // SZANSA NA WYWOŁANIE PYTANIA TYLKO NA WŁASNYCH EVENTACH
             if (isHostedEvent && (currentTrackIndex === 2 || currentTrackIndex === 5)) {
                 setTimeout(() => { triggerCrisisQuestion(); }, 800);
             }
@@ -1327,24 +1373,23 @@
             if (success) {
                 let payout = currentGig.basePay;
                 
-                // MECHANIKA UCIĘCIA ZYSKU Z BRAMKI O POŁOWĘ (TYLKO DLA WŁASNYCH EVENTÓW)
                 if (isHostedEvent) {
                     payout = Math.floor(payout * 0.5);
                 }
 
                 player.cash += payout;
-                player.exp += 50 + (totalTracksInSet * 5); 
-                player.rep += isHostedEvent ? 70 : 30;
+                player.exp += currentGig.rewardExp; 
+                player.rep += currentGig.rewardRep;
                 player.lifetimeStats.gigsPlayed++;
                 player.lifetimeStats.totalCashEarned += payout;
 
-                if (player.exp >= player.level * 100) {
+                while (player.exp >= player.level * 100) {
                     player.exp -= player.level * 100;
                     player.level++;
                     player.statPoints += 2;
                 }
 
-                alert(`🎉 SET SKOŃCZONY SUKCESEM!\n\nZagrane numery: ${totalTracksInSet}/${totalTracksInSet}\nFrekwencja: ${currentGig.attendance} osób\nZarobek: +${payout} PLN\nReputacja: +${isHostedEvent ? 70 : 30} pkt`);
+                alert(`🎉 SET SKOŃCZONY SUKCESEM!\n\nZagrane numery: ${totalTracksInSet}/${totalTracksInSet}\nFrekwencja: ${currentGig.attendance} osób\nZarobek: +${payout} PLN\nEXP: +${currentGig.rewardExp}\nReputacja: +${currentGig.rewardRep} pkt`);
             } else {
                 player.rep = Math.max(0, player.rep - 20);
                 alert("❌ KLAPA! Energia spadła do zera. Impreza przerwana.");
@@ -1460,28 +1505,22 @@
 
         function updateEventEstimates() {
             const locId = document.getElementById('event-location').value;
-            const promo = document.getElementById('event-promo').value;
-            const loc = LOCATIONS[locId];
+            const promoKey = document.getElementById('event-promo').value;
             
-            let rentalCost = locId === 'lazarz' ? 50 : (locId === 'domtechnika' ? 300 : 800);
-            let promoCost = promo === 'low' ? 20 : (promo === 'mid' ? 100 : 300);
-            let totalCost = rentalCost + promoCost;
-            
+            const locConfig = EVENT_LOC_CONFIGS[locId];
+            const promoConfig = EVENT_PROMO_CONFIGS[promoKey];
+
+            let totalCost = locConfig.rent + promoConfig.cost;
             document.getElementById('event-cost').innerText = `${totalCost} PLN`;
             
-            let promoMultiplier = promo === 'low' ? 0.4 : (promo === 'mid' ? 1.1 : 2.2);
-            let estMin = Math.floor(loc.basePpl * promoMultiplier * 0.85);
-            let estMax = Math.floor(loc.basePpl * promoMultiplier * 1.15);
-            
-            let cap = loc.basePpl * 2.5;
-            if(estMin > cap) estMin = Math.floor(cap);
-            if(estMax > cap) estMax = Math.floor(cap);
+            let span = locConfig.maxPpl - locConfig.minPpl;
+            let estMin = Math.floor(locConfig.minPpl + span * promoConfig.spanMin);
+            let estMax = Math.floor(locConfig.minPpl + span * promoConfig.spanMax);
 
             document.getElementById('event-predicted-guests').innerText = `${estMin}-${estMax} osób`;
             
-            // OBLICZAMY WIZUALNIE W PANELU UCINANIE 50% Z BRAMKI
             let avgGuests = (estMin + estMax) / 2;
-            let fullRevenue = avgGuests * loc.ticketPrice;
+            let fullRevenue = avgGuests * locConfig.ticket;
             let playerCut = Math.floor(fullRevenue * 0.5);
 
             document.getElementById('event-predicted-profit').innerText = `~${playerCut} PLN`;

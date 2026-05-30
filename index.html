@@ -863,7 +863,7 @@
                 <h2 class="neon-text" style="color: var(--neon-pink); font-size: 2rem; margin-bottom: 20px;">🔒 OPCJA ZABLOKOWANA</h2>
                 <p style="font-size: 1.1rem; color: var(--muted-text); max-width: 500px; margin: 0 auto; line-height: 1.6;">
                     Festiwal Otchłani jest dostępny tylko dla najbardziej elitarnych i doświadczonych artystów sceny undergroundowej.<br><br>
-                    <strong style="color: var(--neon-cyan); font-size: 1.2rem;">WYMAGANY POZIOM DJ-a: 20</strong>
+                    <strong style="color: var(--neon-cyan); font-size: 1.2rem;">WYMAGANY POZIOM DJ-a: 15</strong>
                 </p>
             </div>
             <div id="festiwal-unlocked-box" style="display: none; max-width: 700px; margin: 0 auto; background: #11071c; border: 2px solid var(--neon-cyan); padding: 30px; border-radius: 4px; box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);">
@@ -1048,7 +1048,7 @@
                 }
             }
             if (tabId === 'festiwal') {
-                if (player.level >= 20) {
+                if (player.level >= 15) {
                     document.getElementById('festiwal-locked-box').style.display = 'none';
                     document.getElementById('festiwal-unlocked-box').style.display = 'block';
                 } else {
@@ -1081,8 +1081,8 @@
 
             const festiwalBtn = document.getElementById('btn-festiwal');
             if (festiwalBtn) {
-                if (player.level < 20) {
-                    festiwalBtn.innerText = "FESTIWAL (OD 20 LVL)";
+                if (player.level < 15) {
+                    festiwalBtn.innerText = "FESTIWAL (OD 15 LVL)";
                     festiwalBtn.style.color = "var(--neon-pink)";
                 } else {
                     festiwalBtn.innerText = "FESTIWAL";

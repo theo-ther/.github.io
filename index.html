@@ -1390,6 +1390,9 @@
                 }
 
                 alert(`🎉 SET SKOŃCZONY SUKCESEM!\n\nZagrane numery: ${totalTracksInSet}/${totalTracksInSet}\nFrekwencja: ${currentGig.attendance} osób\nZarobek: +${payout} PLN\nEXP: +${currentGig.rewardExp}\nReputacja: +${currentGig.rewardRep} pkt`);
+                
+                // Automatyczny zapis po udanym secie (opcjonalny komfort dla gracza)
+                localStorage.setItem('otchlan_game_save', JSON.stringify({ player, boughtItems }));
             } else {
                 player.rep = Math.max(0, player.rep - 20);
                 alert("❌ KLAPA! Energia spadła do zera. Impreza przerwana.");
@@ -1531,16 +1534,46 @@
             if (box) { box.innerHTML += `<br>${msg}`; box.scrollTop = box.scrollHeight; }
         }
 
-        function manualSaveGame() { alert("Kariera zapisana pomyślnie w pamięci flash konsolety!"); }
+        function manualSaveGame() { 
+            const saveData = {
+                player: player,
+                boughtItems: boughtItems
+            };
+            localStorage.setItem('otchlan_game_save', JSON.stringify(saveData));
+            alert("Kariera zapisana pomyślnie w pamięci konsolety przeglądarki!"); 
+        }
+
         function manualResetGame() { 
-            if(confirm("Czy na pewno chcesz zresetować postęp?")) {
+            if(confirm("Czy na pewno chcesz zresetować postęp? Ta operacja usunie również plik zapisu!")) {
+                localStorage.removeItem('otchlan_game_save');
                 player = JSON.parse(JSON.stringify(DEFAULT_PLAYER)); 
                 boughtItems = ['sluchawki_1', 'stopery_none', 'pendrive_1', 'mikser_none', 'audio_none'];
                 updateHUD(); 
+                refreshRpgStatsUI();
                 switchTab('map'); 
+                alert("Postęp został zresetowany.");
             }
         }
-        function loadGame() { updateHUD(); refreshRpgStatsUI(); }
+
+        function loadGame() { 
+            const savedData = localStorage.getItem('otchlan_game_save');
+            if (savedData) {
+                try {
+                    const parsedData = JSON.parse(savedData);
+                    if (parsedData.player) player = parsedData.player;
+                    if (parsedData.boughtItems) boughtItems = parsedData.boughtItems;
+                    
+                    // Bezpieczna weryfikacja brakujących pól w przypadku przyszłych aktualizacji struktury
+                    if (!player.lifetimeStats) {
+                        player.lifetimeStats = { gigsPlayed: 0, eventsHosted: 0, totalCashEarned: player.cash };
+                    }
+                } catch (e) {
+                    console.error("Błąd ładowania pliku zapisu:", e);
+                }
+            }
+            updateHUD(); 
+            refreshRpgStatsUI(); 
+        }
     </script>
 </body>
 </html>

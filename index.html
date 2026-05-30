@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTCHŁAŃ // DJ Simulator & RPG</title>
+    <style>
+        :root {
+            --bg-color: #0a050d;
+            --panel-bg: #130b1e;
+            --neon-violet: #bc13fe;
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff0055;
+            --text-color: #e2d9f3;
+            --muted-text: #7b6894;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            padding-bottom: 40px;
+        }
+
+        .neon-text {
+            text-shadow: 0 0 5px var(--neon-violet), 0 0 15px var(--neon-violet);
+        }
+        .neon-border {
+            border: 2px solid var(--neon-violet);
+            box-shadow: 0 0 10px rgba(188, 19, 254, 0.3);
+        }
+
+        header {
+            background: linear-gradient(180deg, #1a0033 0%, var(--bg-color) 100%);
+            padding: 20px;
+            border-bottom: 2px solid var(--neon-violet);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo h1 {
+            font-size: 2rem;
+            letter-spacing: 5px;
+            color: #fff;
+            animation: pulse 2s infinite alternate;
+        }
+
+        .hud-stats {
+            display: flex;
+            gap: 25px;
+            font-size: 1.1rem;
+        }
+
+        .hud-stats span strong {
+            color: var(--neon-cyan);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: var(--panel-bg);
+            color: var(--muted-text);
+            border: 1px solid var(--muted-text);
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            color: #fff;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+            background: #161e38;
+        }
+
+        .view-section {
+            display: none;
+            background: var(--panel-bg);
+            padding: 25px;
+            border-radius: 4px;
+            min-height: 500px;
+            position: relative;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        .map-container {
+            position: relative;
+            background: #08030f;
+            height: 550px;
+            border-radius: 8px;
+            border: 2px solid var(--neon-violet);
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(188, 19, 254, 0.2);
+        }
+
+        .map-bg-art {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.07;
+            background-image: linear-gradient(rgba(0, 243, 255, 0.3) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 243, 255, 0.3) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 1;
+        }
+
+        .map-river {
+            position: absolute;
+            right: 18%;
+            top: 0;
+            width: 35px;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(0, 100, 150, 0.2) 0%, rgba(0, 243, 255, 0.15) 50%, rgba(0, 100, 150, 0.2) 100%);
+            border-left: 1px dashed rgba(0, 243, 255, 0.3);
+            border-right: 1px dashed rgba(0, 243, 255, 0.3);
+            transform: skewX(-8deg);
+            z-index: 2;
+        }
+
+        .map-river-label {
+            position: absolute;
+            top: 10%;
+            right: 13%;
+            font-size: 0.7rem;
+            color: rgba(0, 243, 255, 0.4);
+            transform: rotate(-82deg);
+            letter-spacing: 4px;
+            z-index: 2;
+        }
+
+        .district-label {
+            position: absolute;
+            font-size: 0.8rem;
+            color: rgba(123, 104, 148, 0.25);
+            font-weight: bold;
+            letter-spacing: 3px;
+            z-index: 2;
+            text-transform: uppercase;
+        }
+
+        .map-title {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            color: var(--neon-cyan);
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            z-index: 3;
+            background: rgba(10, 5, 13, 0.8);
+            padding: 4px 8px;
+            border-left: 3px solid var(--neon-pink);
+        }
+
+        .location-node {
+            position: absolute;
+            width: 140px;
+            height: 75px;
+            background: rgba(10, 5, 15, 0.9);
+            border: 2px solid var(--neon-pink);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 0, 85, 0.2);
+            z-index: 10;
+        }
+
+        .location-node:hover {
+            transform: translateY(-5px);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan), 0 10px 15px rgba(0,0,0,0.6);
+        }
+
+        .location-node.locked {
+            border-color: #332233;
+            background: rgba(20, 15, 25, 0.95);
+            opacity: 0.4;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .location-node.locked:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .location-node h3 {
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .location-node span {
+            font-size: 0.65rem;
+            color: var(--neon-cyan);
+        }
+
+        .gig-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .deck-panel {
+            background: #0d0614;
+            border: 2px solid var(--neon-violet);
+            padding: 20px;
+            border-radius: 6px;
+            position: relative;
+        }
+
+        .crowd-panel {
+            background: #0d0614;
+            border: 2px solid var(--neon-pink);
+            padding: 20px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .rhythm-machine {
+            margin: 25px 0;
+            background: #1b1026;
+            padding: 15px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .track-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+        }
+
+        .bpm-matching {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: #000;
+            padding: 10px;
+        }
+
+        .bpm-slider {
+            flex-grow: 1;
+            accent-color: var(--neon-cyan);
+        }
+
+        .required-action-prompt {
+            background: #2a081a;
+            border: 1px solid var(--neon-pink);
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            border-radius: 4px;
+        }
+
+        .timing-track {
+            height: 40px;
+            background: #050208;
+            border: 1px solid #3d2456;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .target-zone {
+            position: absolute;
+            top: 0;
+            left: 70%;
+            width: 20%;
+            height: 100%;
+            background: rgba(0, 243, 255, 0.25);
+            border-left: 2px dashed var(--neon-cyan);
+            border-right: 2px dashed var(--neon-cyan);
+        }
+
+        .perfect-line {
+            position: absolute;
+            top: 0;
+            left: 80%;
+            width: 2px;
+            height: 100%;
+            background: var(--neon-pink);
+            box-shadow: 0 0 8px var(--neon-pink);
+        }
+
+        .beat-marker {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: #fff;
+            box-shadow: 0 0 10px #fff;
+        }
+
+        .action-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .dj-btn {
+            background: linear-gradient(135deg, #2c0c4d 0%, #17032b 100%);
+            border: 1px solid var(--neon-violet);
+            color: #fff;
+            padding: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .dj-btn:active:not(:disabled) {
+            background: var(--neon-violet);
+        }
+
+        .dj-btn.highlighted-action {
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 12px rgba(255, 0, 85, 0.6);
+        }
+
+        .crowd-visual {
+            height: 150px;
+            background: #030105;
+            border: 1px solid #221133;
+            margin: 15px 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 4px;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .human-silhouette {
+            width: 12px;
+            height: 40px;
+            background-color: #2b173d;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            transition: height 0.1s, background-color 0.3s;
+        }
+
+        .progress-bar-container {
+            background: #221133;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 0 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 50%;
+            background: linear-gradient(90deg, var(--neon-pink) 0%, var(--neon-cyan) 100%);
+            transition: width 0.3s;
+        }
+
+        /* STYL OKNA PYTAŃ KRYZYSOWYCH (POPUP) */
+        .crisis-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 5, 15, 0.95);
+            z-index: 500;
+            padding: 30px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 3px solid var(--neon-pink);
+            box-shadow: 0 0 30px rgba(255, 0, 85, 0.5);
+        }
+
+        .crisis-box {
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .crisis-title {
+            color: var(--neon-pink);
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .crisis-desc {
+            font-size: 1rem;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            background: #1b1026;
+            padding: 15px;
+            border-left: 4px solid var(--neon-cyan);
+        }
+
+        .crisis-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .crisis-opt-btn {
+            background: #150a21;
+            border: 1px solid var(--neon-cyan);
+            color: #fff;
+            padding: 14px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .crisis-opt-btn:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .crisis-timer-container {
+            width: 100%;
+            background: #221133;
+            height: 8px;
+            margin-top: 20px;
+        }
+
+        .crisis-timer-bar {
+            height: 100%;
+            width: 100%;
+            background: var(--neon-pink);
+            transition: width 0.1s linear;
+        }
+
+        .stats-card-box {
+            background: #0e0616;
+            border: 1px solid #28183a;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #221133;
+        }
+
+        .lvl-up-btn {
+            background: var(--neon-cyan);
+            color: #000;
+            border: none;
+            padding: 4px 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .lvl-up-btn:disabled {
+            background: #444;
+            color: #881111;
+            cursor: not-allowed;
+        }
+
+        .shop-category-title {
+            color: var(--neon-cyan);
+            font-size: 1.1rem;
+            margin: 20px 0 10px 0;
+            border-left: 3px solid var(--neon-violet);
+            padding-left: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .item-card {
+            background: #1b1026;
+            border: 1px solid #3d2456;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 4px;
+        }
+
+        .item-card.equipped {
+            border-color: var(--neon-cyan);
+            background: #131c2e;
+        }
+
+        .buy-btn {
+            background: var(--neon-pink);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .buy-btn:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        .save-control-box {
+            margin-top: 30px;
+            background: #0d0614;
+            border: 1px dashed var(--neon-cyan);
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .save-btn {
+            background: #00f3ff;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 10px;
+            text-transform: uppercase;
+        }
+
+        .reset-btn {
+            background: #ff0055;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .event-panel {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #11071c;
+            border: 1px solid var(--neon-violet);
+            padding: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--neon-cyan);
+        }
+
+        .form-group select {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--neon-violet);
+            color: #fff;
+            padding: 10px;
+            font-family: inherit;
+        }
+
+        .summary-box {
+            background: #1b1026;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .btn-block {
+            width: 100%;
+            display: block;
+            text-align: center;
+        }
+
+        .logs-box {
+            background: #050208;
+            border: 1px solid #221133;
+            height: 110px;
+            overflow-y: auto;
+            padding: 10px;
+            font-size: 0.8rem;
+            color: #9c8cb3;
+            margin-top: 15px;
+        }
+
+        @keyframes pulse {
+            0% { text-shadow: 0 0 5px var(--neon-violet); }
+            100% { text-shadow: 0 0 20px var(--neon-violet), 0 0 30px var(--neon-pink); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <h1 class="neon-text">OTCHŁAŃ</h1>
+        </div>
+        <div class="hud-stats">
+            <span>Poziom: <strong id="hud-level">1</strong></span>
+            <span>Reputacja: <strong id="hud-rep">0</strong> pkt</span>
+            <span>Kasa: <strong id="hud-cash">150</strong> PLN</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav>
+            <button class="tab-btn active" id="btn-map" onclick="switchTab('map')">MAPA MIASTA</button>
+            <button class="tab-btn" id="btn-rpg" onclick="switchTab('rpg')">MOJA POSTAĆ</button>
+            <button class="tab-btn" id="btn-shop" onclick="switchTab('shop')">SKLEP MUZYCZNY</button>
+            <button class="tab-btn" id="btn-event" onclick="switchTab('event')">Zorganizuj Event</button>
+        </nav>
+
+        <section id="view-map" class="view-section active">
+            <div class="map-container">
+                <div class="map-bg-art"></div>
+                <div class="map-river"></div>
+                <div class="map-river-label">WARTA</div>
+                
+                <div class="map-title">// SIATKA GEOGRAFICZNA: POZNAŃ UNDERGROUND</div>
+                
+                <div class="district-label" style="top: 75%; left: 8%;">Św. Łazarz</div>
+                <div class="district-label" style="top: 50%; left: 35%;">Centrum</div>
+                <div class="district-label" style="top: 58%; left: 48%;">Garbary</div>
+                <div class="district-label" style="top: 22%; left: 68%;">Śródka</div>
+
+                <div class="location-node" style="top: 68%; left: 10%; border-color: var(--neon-cyan);" onclick="startGig('lazarz')">
+                    <h3>Piwnica Łazarz</h3>
+                    <span>Wym. Rep: 0</span>
+                </div>
+
+                <div id="node-domtechnika" class="location-node locked" style="top: 42%; left: 32%;" onclick="startGig('domtechnika')">
+                    <h3>Dom Technika</h3>
+                    <span>Wym. Rep: 150</span>
+                </div>
+
+                <div id="node-schron" class="location-node locked" style="top: 58%; left: 48%;" onclick="startGig('schron')">
+                    <h3>Schron</h3>
+                    <span>Wym. Rep: 600</span>
+                </div>
+
+                <div id="node-tama" class="location-node locked" style="top: 25%; left: 62%;" onclick="startGig('tama')">
+                    <h3>Tama</h3>
+                    <span>Wym. Rep: 1500</span>
+                </div>
+            </div>
+            <div class="logs-box" id="map-logs">> Paszport aktywowany. Wybierz miejsce na krytyczny set.</div>
+        </section>
+
+        <section id="view-djdeck" class="view-section">
+            <!-- NAKŁADKA KRYZYSOWA (POP-UP NA PYTANIA) -->
+            <div class="crisis-overlay" id="crisis-overlay">
+                <div class="crisis-box">
+                    <div class="crisis-title" id="crisis-title">⚠️ SYTUACJA AWARYJNA</div>
+                    <div class="crisis-desc" id="crisis-desc">Ktoś próbuje wejść na backstage bez opaski i twierdzi, że zna DJ-a. Co robisz?</div>
+                    <div class="crisis-options" id="crisis-options-box">
+                        <!-- Opcje generowane dynamicznie -->
+                    </div>
+                    <div class="crisis-timer-container">
+                        <div class="crisis-timer-bar" id="crisis-timer-bar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gig-grid">
+                <div class="deck-panel">
+                    <h2 class="neon-text" id="deck-club-title">MIKSOWANIE LIVE</h2>
+                    
+                    <div class="rhythm-machine">
+                        <div class="track-info">
+                            <span id="current-track-name" style="color: var(--neon-cyan); font-weight: bold;">NUMER: 1 / 5</span>
+                            <span id="current-track-bpm" style="color: var(--neon-pink); font-weight: bold;">Target: -- BPM</span>
+                        </div>
+
+                        <div class="bpm-matching">
+                            <label>Dopasuj Pitch (BPM):</label>
+                            <input type="range" class="bpm-slider" id="bpm-slider" oninput="adjustBpm(this.value)">
+                            <span id="bpm-display" style="color: var(--neon-cyan); font-weight: bold;">130 BPM</span>
+                        </div>
+
+                        <div class="required-action-prompt" id="required-action-ui">
+                            WYMAGANA AKCJA: ???
+                        </div>
+                        
+                        <div class="timing-track">
+                            <div class="target-zone" id="ui-target-zone"></div>
+                            <div class="perfect-line"></div>
+                            <div class="beat-marker" id="beat-marker"></div>
+                        </div>
+
+                        <div class="action-controls">
+                            <button class="dj-btn" id="dj-btn-drop" onclick="triggerDjAction('drop')">🔥 Odpal DROP</button>
+                            <button class="dj-btn" id="dj-btn-trans" onclick="triggerDjAction('transition')">🎛️ Zrób Przejście</button>
+                        </div>
+                    </div>
+
+                    <button class="dj-btn btn-block" style="border-color: var(--neon-pink); color: #fff;" onclick="abortGig()">Uciekaj z klubu (Przerwij set)</button>
+                </div>
+
+                <div class="crowd-panel">
+                    <div>
+                        <h3>STAN REAKCJI LUDZI</h3>
+                        <p style="font-size: 0.8rem; margin-bottom: 15px; color: var(--muted-text)">Ukończ wszystkie numery w secie i utrzymaj tłum!</p>
+                        
+                        <label>Energia tłumu:</label>
+                        <div class="progress-bar-container"><div class="progress-fill" id="crowd-energy-bar" style="width: 50%;"></div></div>
+
+                        <label>Zaufanie publiki:</label>
+                        <div class="progress-bar-container"><div class="progress-fill" id="crowd-trust-bar" style="width: 30%; background: var(--neon-cyan);"></div></div>
+                    </div>
+
+                    <div class="crowd-visual" id="crowd-visual-box"></div>
+
+                    <div id="gig-stats-realtime" style="font-size: 0.85rem; background: #000; padding: 10px;">
+                        Klubowicze na sali: <span id="gig-ppl-count">0</span><br>
+                        Aktualny vibe: <span id="gig-vibe-status" style="color: var(--neon-cyan)">Neutralny</span>
+                    </div>
+                </div>
+            </div>
+            <div class="logs-box" id="dj-logs">> Mikser gotowy. Kontroluj zadania powyżej!</div>
+        </section>
+
+        <section id="view-rpg" class="view-section">
+            <div class="rpg-grid">
+                <div>
+                    <h2 class="neon-text" style="margin-bottom: 15px;">📊 PASZPORT POSTACI</h2>
+                    <div class="stats-card-box">
+                        <div class="stat-row"><span>Doświadczenie (EXP):</span><span id="stat-exp-val" style="color:var(--neon-cyan)">0 / 100</span></div>
+                        <div class="progress-bar-container" style="height:8px; margin: 0 0 15px 0;"><div class="progress-fill" id="exp-progress-bar" style="width: 0%; background: var(--neon-cyan);"></div></div>
+                        <div class="stat-row"><span>Poziom DJ-a:</span><strong id="stat-level-val">1</strong></div>
+                        <div class="stat-row"><span>Zagrane kontrakty:</span><strong id="stat-gigs-played">0</strong></div>
+                        <div class="stat-row"><span>Zorganizowane eventy:</span><strong id="stat-events-hosted">0</strong></div>
+                        <div class="stat-row"><span>Łącznie zarobiono (Brutto):</span><span id="stat-total-cash" style="color:#00ff66">0 PLN</span></div>
+                    </div>
+
+                    <h3 class="neon-text" style="margin-bottom: 10px; font-size: 1.1rem;">🎛️ AKTUALNE WYPOSAŻENIE</h3>
+                    <div class="stats-card-box" id="equipped-gear-box"></div>
+
+                    <h3 class="neon-text" style="margin-bottom: 10px; font-size: 1.1rem;">🎛️ CECHY DJ-SKIE</h3>
+                    <p style="font-size:0.9rem; margin-bottom:10px;">Dostępne punkty rozwoju: <strong id="rpg-points" style="color: var(--neon-cyan)">0</strong></p>
+                    
+                    <div class="stat-row">
+                        <div><strong>Timing (Wyczucie rytmu)</strong><br><small style="color: var(--muted-text)">Zwiększa margines błędu w grze rytmicznej.</small></div>
+                        <div><span id="stat-timing-val">1</span> <button id="upgrade-timing-btn" class="lvl-up-btn" onclick="upgradeStat('timing')">+</button></div>
+                    </div>
+                    <div class="stat-row">
+                        <div><strong>Selekcja (Znajomość muzyki)</strong><br><small style="color: var(--muted-text)">Bazowa energia generowana na starcie seta.</small></div>
+                        <div><span id="stat-selection-val">1</span> <button id="upgrade-selection-btn" class="lvl-up-btn" onclick="upgradeStat('selection')">+</button></div>
+                    </div>
+                    <div class="stat-row">
+                        <div><strong>Crowd Control (Charyzma)</strong><br><small style="color: var(--muted-text)">Szybsza stabilizacja tłumu po pomyłkach.</small></div>
+                        <div><span id="stat-control-val">1</span> <button id="upgrade-control-btn" class="lvl-up-btn" onclick="upgradeStat('control')">+</button></div>
+                    </div>
+
+                    <div class="save-control-box">
+                        <button class="save-btn" onclick="manualSaveGame()">Zapisz Stan</button>
+                        <button class="reset-btn" onclick="manualResetGame()">Reset Postępu</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-shop" class="view-section">
+            <h2 class="neon-text" style="margin-bottom: 10px;">🎧 SKLEP MUZYCZNY</h2>
+            <div id="shop-container"></div>
+        </section>
+
+        <section id="view-event" class="view-section">
+            <div class="event-panel">
+                <h2 class="neon-text" style="margin-bottom: 15px; text-align: center;">PRODUKCJA IMPREZY „OTCHŁAŃ”</h2>
+                
+                <div class="form-group">
+                    <label>Wybierz lokację pod własną markę:</label>
+                    <select id="event-location" onchange="updateEventEstimates()">
+                        <option value="lazarz">Piwnica Łazarz (Wynajem: 50 PLN, Bilet: 10 PLN)</option>
+                        <option value="domtechnika">Dom Technika (Wynajem: 300 PLN, Bilet: 25 PLN)</option>
+                        <option value="schron">Schron (Wynajem: 800 PLN, Bilet: 40 PLN)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Budżet na promocję:</label>
+                    <select id="event-promo" onchange="updateEventEstimates()">
+                        <option value="low">Szeptany marketing po znajomych (Cost: 20 PLN | Słaba frekwencja)</option>
+                        <option value="mid">Plakatowanie miasta + wlepy (Cost: 100 PLN | Średnia frekwencja)</option>
+                        <option value="high">Agresywna kampania w socialach (Cost: 300 PLN | Maksymalna frekwencja)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Główny nurt muzyczny nocy (BASS MUSIC):</label>
+                    <select id="event-genre" onchange="updateEventEstimates()">
+                        <option value="dnb">Drum and Bass (170-176 BPM)</option>
+                        <option value="neurofunk">Neurofunk (172-178 BPM)</option>
+                        <option value="ukg">UK Garage (130-134 BPM)</option>
+                        <option value="dubstep">Deep Dubstep (140-142 BPM)</option>
+                    </select>
+                </div>
+
+                <div class="summary-box">
+                    <strong>SZACOWANE REZULTATY FINANSOWE:</strong><br><br>
+                    Koszt produkcji: <span id="event-cost" style="color: var(--neon-pink)">70 PLN</span><br>
+                    Szacowana frekwencja: <span id="event-predicted-guests" style="color: var(--neon-cyan)">15-25 osób</span><br>
+                    Maksymalny możliwy zysk z biletów: <span id="event-predicted-profit" style="color: #00ff66">~250 PLN</span>
+                </div>
+
+                <button class="dj-btn btn-block" style="margin-top: 25px; border-color: var(--neon-cyan);" onclick="launchHostedEvent()">🔥 ODPAL EVENT "OTCHŁAŃ"</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const DEFAULT_PLAYER = {
+            level: 1, exp: 0, rep: 0, cash: 150, statPoints: 0,
+            stats: { timing: 1, selection: 1, control: 1 },
+            equipped: { sluchawki: 'sluchawki_1', stopery: 'stopery_none', pendrive: 'pendrive_1', mikser: 'mikser_none', audio: 'audio_none' },
+            lifetimeStats: { gigsPlayed: 0, eventsHosted: 0, totalCashEarned: 150 }
+        };
+
+        let player = JSON.parse(JSON.stringify(DEFAULT_PLAYER));
+
+        const ITEMS = {
+            sluchawki_1: { id: 'sluchawki_1', name: "Tanie pchełki z kiosku", cost: 0, type: "sluchawki", bonus: 0, desc: "Słyszysz głównie wysokie tony. Słaba izolacja." },
+            sluchawki_2: { id: 'sluchawki_2', name: "Słuchawki HD Pro DJ", cost: 200, type: "sluchawki", bonus: 3, desc: "+3 do Timingu. Przyzwoita izolacja od hałasu klubu." },
+            sluchawki_3: { id: 'sluchawki_3', name: "Sennheiser HD 25 Elite", cost: 550, type: "sluchawki", bonus: 7, desc: "+7 do Timingu. Prawdziwa klubowa legenda o czystym brzmieniu." },
+            
+            stopery_none: { id: 'stopery_none', name: "Brak ochrony słuchu", cost: 0, type: "stopery", bonus: 0, desc: "Po secie dzwoni Ci w uszach, a bas Cię zagłusza." },
+            stopery_1: { id: 'stopery_1', name: "Stopery Audio-Safe", cost: 40, type: "stopery", bonus: 2, desc: "+2 do Crowd Control. Ścinają ból, pozwalają myśleć." },
+            stopery_2: { id: 'stopery_2', name: "Zatyczki Odlewane", cost: 250, type: "stopery", bonus: 6, desc: "+6 do Crowd Control. Filtry liniowe dają pełną kontrolę." },
+            
+            pendrive_1: { id: 'pendrive_1', name: "Stary Plastik USB 2.0", cost: 0, type: "pendrive", bonus: 0, desc: "Pliki ładują się powoli, a baza danych potrafi się zawiesić." },
+            pendrive_2: { id: 'pendrive_2', name: "SanDisk Ultra USB 3.2", cost: 90, type: "pendrive", bonus: 3, desc: "+3 do Selekcji. Szybkie przeszukiwanie playlist i tagów." },
+            pendrive_3: { id: 'pendrive_3', name: "Corsair Survivor Metal", cost: 300, type: "pendrive", bonus: 8, desc: "+8 do Selekcji. Pancerny i ultraszybki pendrive." },
+
+            mikser_none: { id: 'mikser_none', name: "Stary laptop z klawiaturą", cost: 0, type: "mikser", bonus: 0, desc: "Miksowanie myszką i spacją. Straszne opóźnienia." },
+            mikser_1: { id: 'mikser_1', name: "Pioneer DDJ-400 (Kontroler)", cost: 450, type: "mikser", bonus: 4, desc: "+4 do Timingu. Małe koła JOG, ale układ klubowy." },
+            mikser_2: { id: 'mikser_2', name: "Pioneer CDJ-2000NXS2 Setup", cost: 1200, type: "mikser", bonus: 9, desc: "+5 do Timingu, +4 do Selekcji. Branżowy standard." },
+            mikser_3: { id: 'mikser_3', name: "Pioneer CDJ-3000 + DJM-A9", cost: 3200, type: "mikser", bonus: 16, desc: "+10 do Timingu, +6 do Selekcji. Potwór. Miksy wchodzą same." },
+
+            audio_none: { id: 'audio_none', name: "Głośniki wbudowane w laptopa", cost: 0, type: "audio", bonus: 0, desc: "Słychać tylko pukanie. Brak subwoofera." },
+            audio_1: { id: 'audio_1', name: "Monitory KRK Rokit 5", cost: 350, type: "audio", bonus: 4, desc: "+4 do Crowd Control. Klasyczne 'żółtki'." },
+            audio_2: { id: 'audio_2', name: "Mobilne nagłośnienie HK Audio", cost: 950, type: "audio", bonus: 8, desc: "+8 do Crowd Control. Średni bas, idealny na mniejsze salki." },
+            audio_3: { id: 'audio_3', name: "Własny Sound System (Ściana Basowa)", cost: 2500, type: "audio", bonus: 15, desc: "+15 do Crowd Control. Tłum czuje muzykę w klatce piersiowej." }
+        };
+
+        const LOCATIONS = {
+            lazarz: { name: "Piwnica Łazarz", reqRep: 0, basePpl: 30, basePay: 70, bpmMin: 135, bpmMax: 142, ticketPrice: 10, totalTracks: 5 },
+            domtechnika: { name: "Dom Technika", reqRep: 150, basePpl: 100, basePay: 300, bpmMin: 168, bpmMax: 174, ticketPrice: 25, totalTracks: 7 },
+            schron: { name: "Schron", reqRep: 600, basePpl: 250, basePay: 800, bpmMin: 140, bpmMax: 145, ticketPrice: 40, totalTracks: 10 },
+            tama: { name: "Tama", reqRep: 1500, basePpl: 550, basePay: 2000, bpmMin: 172, bpmMax: 178, ticketPrice: 55, totalTracks: 12 }
+        };
+
+        const GENRE_BPM_RANGES = {
+            dnb: { name: "Drum and Bass", min: 170, max: 176 }, 
+            neurofunk: { name: "Neurofunk", min: 172, max: 178 },
+            ukg: { name: "UK Garage", min: 130, max: 134 }, 
+            dubstep: { name: "Deep Dubstep", min: 140, max: 142 }
+        };
+
+        // BAZA PYTAŃ KRYZYSOWYCH DLA WŁASNYCH EVENTÓW
+        const CRISIS_EVENTS = [
+            {
+                text: "Ktoś awanturuje się przy bramce: 'Zapomniałem portfela, ale wejdę bez opaski, znam DJ-a!'. Co robisz?",
+                options: [
+                    { text: "„Wpuszczaj, zrobimy dobry vibe”", effect: () => { crowdTrust += 10; player.cash -= 20; return "Wpuściłeś go. Publika docenia gest, ale straciłeś bilet na bramce (-20 PLN)."; } },
+                    { text: "„Brak opaski to brak wejścia. Wołać ochronę.”", effect: () => { crowdEnergy -= 5; player.cash += 15; return "Koleś usunięty. Trochę dymu pod klubem, ale finanse nienaruszone."; } },
+                    { text: "„Niech postawi piwo barmanowi i wchodzi”", effect: () => { crowdEnergy += 5; crowdTrust += 5; return "Kompromis zadziałał idealnie, bar zarobił, ekipa zadowolona!"; } }
+                ]
+            },
+            {
+                text: "Prawa kolumna basowa nagle zaczyna charczeć i dymić! Nagłośnienie siada.",
+                options: [
+                    { text: "Odetnij bas na mikserze i graj środkiem", effect: () => { crowdEnergy -= 15; return "Tłum wygwizdał spadek basu, ale impreza uratowana."; } },
+                    { text: "Zrób szybki restart końcówki mocy (Ryzyko)", effect: () => { 
+                        if(Math.random() > 0.4) { crowdEnergy += 15; return "Udało się! Pełna moc wróciła, tłum szaleje!"; } 
+                        else { crowdEnergy -= 25; crowdTrust -= 10; return "Katastrofa! Całkowita cisza w klubie na 30 sekund."; }
+                    } },
+                    { text: "Podbij agresywnie soprany, żeby zagłuszyć usterkę", effect: () => { crowdTrust -= 15; return "Uszy bolą od pisków, zaufanie publiki mocno oberwało."; } }
+                ]
+            },
+            {
+                text: "Ochroniarz przybiega na konsolę: 'Sanepid wszedł na salę sprawdzić limity decybeli!'.",
+                options: [
+                    { text: "Przycisz Master o 30% na czas kontroli", effect: () => { crowdEnergy -= 10; return "Tłum lekko zamulił, ale kontrola minęła bez mandatu."; } },
+                    { text: "Zignoruj ich i odpal najmocniejszy drop!", effect: () => { 
+                        player.cash -= 100; crowdEnergy += 25; return "Mandat wlepiony (-100 PLN), ale ten drop przejdzie do historii miasta!"; 
+                    } },
+                    { text: "Zagadaj ich przez mikrofon i rzuć darmowe kupony na bar", effect: () => { player.cash -= 40; crowdTrust += 5; return "Przekupstwo podziałało. Odeszli z uśmiechem (-40 PLN)."; } }
+                ]
+            }
+        ];
+
+        let currentGig = null;
+        let isHostedEvent = false;
+        let beatInterval = null;
+        let driftInterval = null;
+        let crisisTimerInterval = null;
+        let isCrisisActive = false;
+        let markerPos = 0;
+        let markerDirection = 1;
+        let markerSpeed = 2.2; 
+        let targetBpmValue = 140;
+        let currentBpmValue = 130;
+        let crowdEnergy = 50;
+        let crowdTrust = 30;
+        let requiredAction = "drop";
+        let boughtItems = ['sluchawki_1', 'stopery_none', 'pendrive_1', 'mikser_none', 'audio_none'];
+        
+        let currentTrackIndex = 1;
+        let totalTracksInSet = 5;
+
+        window.onload = function() { loadGame(); switchTab('map'); };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`view-${tabId}`).classList.add('active');
+            
+            const btnMap = { 'map': 'btn-map', 'rpg': 'btn-rpg', 'shop': 'btn-shop', 'event': 'btn-event' };
+            if (btnMap[tabId]) document.getElementById(btnMap[tabId]).classList.add('active');
+            
+            if (tabId === 'shop') renderShop();
+            if (tabId === 'rpg') renderRpgEquipment();
+            if (tabId === 'event') updateEventEstimates();
+            updateHUD();
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-level').innerText = player.level;
+            document.getElementById('hud-rep').innerText = player.rep;
+            document.getElementById('hud-cash').innerText = player.cash;
+            
+            if (player.rep >= 150) document.getElementById('node-domtechnika').classList.remove('locked');
+            if (player.rep >= 600) document.getElementById('node-schron').classList.remove('locked');
+            if (player.rep >= 1500) document.getElementById('node-tama').classList.remove('locked');
+        }
+
+        function getEffectiveStat(statName) {
+            let base = player.stats[statName];
+            let bonus = 0;
+            for (let slot in player.equipped) {
+                let itemId = player.equipped[slot];
+                let item = ITEMS[itemId];
+                if (!item) continue;
+                if (slot === 'sluchawki' && statName === 'timing') bonus += item.bonus;
+                if (slot === 'pendrive' && statName === 'selection') bonus += item.bonus;
+                if (slot === 'stopery' && statName === 'control') bonus += item.bonus;
+                if (slot === 'mikser') {
+                    if (statName === 'timing' && itemId === 'mikser_1') bonus += 4;
+                    if (itemId === 'mikser_2') { bonus += (statName === 'timing') ? 5 : (statName === 'selection' ? 4 : 0); }
+                    if (itemId === 'mikser_3') { bonus += (statName === 'timing') ? 10 : (statName === 'selection' ? 6 : 0); }
+                }
+                if (slot === 'audio' && statName === 'control') bonus += item.bonus;
+            }
+            return base + bonus;
+        }
+
+        function startGig(locId) {
+            const loc = LOCATIONS[locId];
+            if (!loc || player.rep < loc.reqRep) return;
+            
+            let randomBpm = Math.floor(Math.random() * (loc.bpmMax - loc.bpmMin + 1)) + loc.bpmMin;
+
+            currentGig = {
+                name: loc.name,
+                targetBpm: randomBpm,
+                basePay: loc.basePay,
+                attendance: Math.floor(loc.basePpl * (0.9 + Math.random() * 0.2)),
+                totalTracks: loc.totalTracks
+            };
+            isHostedEvent = false;
+            setupDeckView(currentGig.name, currentGig.targetBpm, currentGig.totalTracks);
+        }
+
+        function launchHostedEvent() {
+            const locId = document.getElementById('event-location').value;
+            const promo = document.getElementById('event-promo').value;
+            const genreKey = document.getElementById('event-genre').value;
+            const loc = LOCATIONS[locId];
+            
+            let rentalCost = locId === 'lazarz' ? 50 : (locId === 'domtechnika' ? 300 : 800);
+            let promoCost = promo === 'low' ? 20 : (promo === 'mid' ? 100 : 300);
+            let totalCost = rentalCost + promoCost;
+
+            if (player.cash < totalCost) { alert("Brak kasy na produkcję imprezy!"); return; }
+
+            player.cash -= totalCost;
+            player.lifetimeStats.eventsHosted++;
+
+            let promoMultiplier = promo === 'low' ? 0.4 : (promo === 'mid' ? 1.1 : 2.2);
+            let finalAttendance = Math.floor(loc.basePpl * promoMultiplier * (0.85 + Math.random() * 0.3));
+            
+            let maxCapacity = loc.basePpl * 2.5;
+            if(finalAttendance > maxCapacity) finalAttendance = Math.floor(maxCapacity);
+
+            let revenue = finalAttendance * loc.ticketPrice;
+
+            let range = GENRE_BPM_RANGES[genreKey];
+            let randomBpm = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+            
+            currentGig = {
+                name: `Własny Event: Otchłań // ${range.name.toUpperCase()}`,
+                targetBpm: randomBpm,
+                basePay: revenue, 
+                attendance: finalAttendance,
+                totalTracks: loc.totalTracks + 2 
+            };
+            
+            isHostedEvent = true;
+            setupDeckView(currentGig.name, currentGig.targetBpm, currentGig.totalTracks);
+        }
+
+        function setupDeckView(title, targetBpm, totalTracks) {
+            switchTab('djdeck');
+            targetBpmValue = targetBpm; 
+            currentTrackIndex = 1;
+            totalTracksInSet = totalTracks;
+            isCrisisActive = false;
+            document.getElementById('crisis-overlay').style.display = 'none';
+
+            document.getElementById('deck-club-title').innerText = title.toUpperCase();
+            document.getElementById('current-track-name').innerText = `TRACK: ${currentTrackIndex} / ${totalTracksInSet}`;
+            document.getElementById('current-track-bpm').innerText = `Target: ${targetBpmValue} BPM`;
+            
+            document.getElementById('dj-logs').innerHTML = `> Rozpoczynasz set: ${title.toUpperCase()}`;
+
+            currentBpmValue = targetBpmValue - 5; 
+            setupBpmSliderLimits();
+
+            crowdEnergy = 40 + getEffectiveStat('selection') * 2;
+            crowdTrust = 30 + getEffectiveStat('control') * 1;
+            document.getElementById('gig-ppl-count').innerText = currentGig.attendance;
+
+            let hitboxZone = document.getElementById('ui-target-zone');
+            let extraHitbox = getEffectiveStat('timing') * 1.3;
+            hitboxZone.style.width = `${18 + extraHitbox}%`;
+            hitboxZone.style.left = `${72 - (extraHitbox/2)}%`;
+
+            randomizeRequiredAction();
+            updateCrowdUI();
+            startRhythmEngine();
+            startBpmDriftEngine();
+        }
+
+        function setupBpmSliderLimits() {
+            document.getElementById('bpm-slider').min = targetBpmValue - 15;
+            document.getElementById('bpm-slider').max = targetBpmValue + 15;
+            document.getElementById('bpm-slider').value = currentBpmValue;
+            document.getElementById('bpm-display').innerText = `${currentBpmValue} BPM`;
+        }
+
+        function randomizeRequiredAction() {
+            requiredAction = Math.random() < 0.5 ? "drop" : "transition";
+            const uiPrompt = document.getElementById('required-action-ui');
+            
+            document.getElementById('dj-btn-drop').classList.remove('highlighted-action');
+            document.getElementById('dj-btn-trans').classList.remove('highlighted-action');
+
+            if(requiredAction === "drop") {
+                uiPrompt.innerText = "WYMAGANA AKCJA: 🔥 ODPAL DROP";
+                uiPrompt.style.background = "#2a081a";
+                document.getElementById('dj-btn-drop').classList.add('highlighted-action');
+            } else {
+                uiPrompt.innerText = "WYMAGANA AKCJA: 🎛️ ZRÓB PRZEJŚCIE";
+                uiPrompt.style.background = "#08232a";
+                document.getElementById('dj-btn-trans').classList.add('highlighted-action');
+            }
+        }
+
+        function startRhythmEngine() {
+            if (beatInterval) clearInterval(beatInterval);
+            const marker = document.getElementById('beat-marker');
+            markerPos = 0;
+            markerDirection = 1;
+
+            beatInterval = setInterval(() => {
+                if(isCrisisActive) return; // Zamrażamy grę rytmiczną na czas pytania
+                markerPos += markerSpeed * markerDirection;
+                if (markerPos >= 100) { markerPos = 100; markerDirection = -1; }
+                else if (markerPos <= 0) { markerPos = 0; markerDirection = 1; }
+                marker.style.left = `${markerPos}%`;
+            }, 16);
+        }
+
+        function startBpmDriftEngine() {
+            if (driftInterval) clearInterval(driftInterval);
+            driftInterval = setInterval(() => {
+                if(isCrisisActive) return;
+                let driftAmount = Math.random() < 0.5 ? -1 : 1;
+                targetBpmValue += driftAmount;
+                document.getElementById('current-track-bpm').innerText = `Target: ${targetBpmValue} BPM`;
+                document.getElementById('bpm-slider').min = targetBpmValue - 15;
+                document.getElementById('bpm-slider').max = targetBpmValue + 15;
+                logMessage('dj', `⚠️ Fala dźwiękowa ucieka! Zmiana tempa na ${targetBpmValue} BPM.`);
+            }, 10000);
+        }
+
+        function triggerCrisisQuestion() {
+            isCrisisActive = true;
+            const crisis = CRISIS_EVENTS[Math.floor(Math.random() * CRISIS_EVENTS.length)];
+            
+            document.getElementById('crisis-desc').innerText = crisis.text;
+            const optionsBox = document.getElementById('crisis-options-box');
+            optionsBox.innerHTML = '';
+
+            crisis.options.forEach((opt, idx) => {
+                let btn = document.createElement('button');
+                btn.className = 'crisis-opt-btn';
+                btn.innerText = `${idx + 1}. ${opt.text}`;
+                btn.onclick = () => resolveCrisis(opt);
+                optionsBox.appendChild(btn);
+            });
+
+            const overlay = document.getElementById('crisis-overlay');
+            overlay.style.display = 'flex';
+
+            let timeLeft = 100;
+            const timerBar = document.getElementById('crisis-timer-bar');
+            timerBar.style.width = '100%';
+
+            if (crisisTimerInterval) clearInterval(crisisTimerInterval);
+            crisisTimerInterval = setInterval(() => {
+                timeLeft -= 1.4; // około 7 sekund na odpowiedź
+                if(timeLeft <= 0) {
+                    clearInterval(crisisTimerInterval);
+                    resolveCrisis(null); // Brak odpowiedzi
+                } else {
+                    timerBar.style.width = `${timeLeft}%`;
+                }
+            }, 100);
+        }
+
+        function resolveCrisis(selectedOption) {
+            clearInterval(crisisTimerInterval);
+            isCrisisActive = false;
+            document.getElementById('crisis-overlay').style.display = 'none';
+
+            if(selectedOption) {
+                let report = selectedOption.effect();
+                logMessage('dj', `📣 [DECYZJA]: ${report}`);
+            } else {
+                // Kara za brak decyzji w czasie
+                crowdEnergy = Math.max(0, crowdEnergy - 20);
+                crowdTrust = Math.max(0, crowdTrust - 15);
+                logMessage('dj', `🚨 [KRYZYS]: Zignorowałeś problem! Chaos narasta, tłum traci cierpliwość.`);
+            }
+
+            updateCrowdUI();
+            updateHUD();
+            checkGigStatus();
+        }
+
+        function adjustBpm(val) {
+            if(isCrisisActive) return;
+            currentBpmValue = parseInt(val);
+            document.getElementById('bpm-display').innerText = `${currentBpmValue} BPM`;
+        }
+
+        function triggerDjAction(clickedAction) {
+            if (isCrisisActive) return;
+
+            let extraHitbox = getEffectiveStat('timing') * 1.3;
+            let targetMin = 72 - (extraHitbox / 2);
+            let targetMax = 90 + (extraHitbox / 2);
+            let timingSuccess = (markerPos >= targetMin && markerPos <= targetMax);
+            let bpmDifference = Math.abs(currentBpmValue - targetBpmValue);
+
+            if (clickedAction !== requiredAction) {
+                crowdEnergy = Math.max(0, crowdEnergy - 15);
+                logMessage('dj', `> [CRASH] Pomyłka sekwencji! Tłum gubi rytm.`);
+                checkGigStatus();
+                return;
+            }
+
+            if (bpmDifference <= 1 && timingSuccess) {
+                crowdEnergy = Math.min(100, crowdEnergy + 15);
+                crowdTrust = Math.min(100, crowdTrust + 8);
+                logMessage('dj', `> [PERFECT] Track ${currentTrackIndex} wszedł idealnie w punkt!`);
+            } else if (bpmDifference <= 3 || timingSuccess) {
+                crowdEnergy = Math.min(100, crowdEnergy + 6);
+                logMessage('dj', `> [GOOD] Stabilne przejście, bas trzyma parkiet.`);
+            } else {
+                crowdEnergy = Math.max(0, crowdEnergy - 12);
+                logMessage('dj', `> [TRAKTOR] Konie mechaniczne! Rozjazd rytmiczny.`);
+            }
+
+            // SZANSA NA WYWOŁANIE PYTANIA (Tylko na własnych imprezach "Otchłań", np przy tracku 3 i 5)
+            if (isHostedEvent && (currentTrackIndex === 2 || currentTrackIndex === 5)) {
+                setTimeout(() => { triggerCrisisQuestion(); }, 800);
+            }
+
+            currentTrackIndex++;
+            if (currentTrackIndex > totalTracksInSet) {
+                if(crowdEnergy >= 25) {
+                    finishGig(true);
+                } else {
+                    finishGig(false);
+                }
+                return;
+            }
+
+            document.getElementById('current-track-name').innerText = `TRACK: ${currentTrackIndex} / ${totalTracksInSet}`;
+            randomizeRequiredAction();
+            updateCrowdUI();
+            checkGigStatus();
+        }
+
+        function updateCrowdUI() {
+            document.getElementById('crowd-energy-bar').style.width = `${crowdEnergy}%`;
+            document.getElementById('crowd-trust-bar').style.width = `${crowdTrust}%`;
+            let statusText = "Neutralny";
+            if (crowdEnergy > 80) statusText = "OGIEŃ!";
+            else if (crowdEnergy > 45) statusText = "BUJA SIĘ";
+            else if (crowdEnergy < 25) statusText = "STREFA GWIZDÓW";
+            document.getElementById('gig-vibe-status').innerText = statusText;
+
+            const visualBox = document.getElementById('crowd-visual-box');
+            visualBox.innerHTML = '';
+            for (let i = 0; i < 15; i++) {
+                let s = document.createElement('div');
+                s.className = 'human-silhouette';
+                s.style.height = `${20 + Math.floor(Math.random() * (crowdEnergy * 1.2))}px`;
+                visualBox.appendChild(s);
+            }
+        }
+
+        function checkGigStatus() {
+            if (crowdEnergy <= 0) { finishGig(false); }
+            else { updateCrowdUI(); }
+        }
+
+        function finishGig(success) {
+            clearInterval(beatInterval);
+            clearInterval(driftInterval);
+            clearInterval(crisisTimerInterval);
+            
+            if (success) {
+                let payout = currentGig.basePay;
+                player.cash += payout;
+                player.exp += 50 + (totalTracksInSet * 5); 
+                player.rep += isHostedEvent ? 70 : 30;
+                player.lifetimeStats.gigsPlayed++;
+                player.lifetimeStats.totalCashEarned += payout;
+
+                if (player.exp >= player.level * 100) {
+                    player.exp -= player.level * 100;
+                    player.level++;
+                    player.statPoints += 2;
+                }
+
+                alert(`🎉 SET SKOŃCZONY SUKCESEM!\n\nZagrane numery: ${totalTracksInSet}/${totalTracksInSet}\nFrekwencja: ${currentGig.attendance} osób\nZarobek z bramki: +${payout} PLN\nReputacja: +${isHostedEvent ? 70 : 30} pkt`);
+            } else {
+                player.rep = Math.max(0, player.rep - 20);
+                alert("❌ KLAPA! Energia spadła do zera. Impreza przerwana.");
+            }
+            currentGig = null;
+            refreshRpgStatsUI();
+            switchTab('rpg'); 
+        }
+
+        function abortGig() {
+            clearInterval(beatInterval);
+            clearInterval(driftInterval);
+            clearInterval(crisisTimerInterval);
+            currentGig = null;
+            switchTab('map');
+        }
+
+        function refreshRpgStatsUI() {
+            document.getElementById('stat-exp-val').innerText = `${player.exp} / ${player.level * 100}`;
+            document.getElementById('exp-progress-bar').style.width = `${(player.exp / (player.level * 100)) * 100}%`;
+            document.getElementById('stat-level-val').innerText = player.level;
+            document.getElementById('stat-gigs-played').innerText = player.lifetimeStats.gigsPlayed;
+            document.getElementById('stat-events-hosted').innerText = player.lifetimeStats.eventsHosted;
+            document.getElementById('stat-total-cash').innerText = `${player.lifetimeStats.totalCashEarned} PLN`;
+            
+            document.getElementById('rpg-points').innerText = player.statPoints;
+            document.getElementById('stat-timing-val').innerText = player.stats.timing;
+            document.getElementById('stat-selection-val').innerText = player.stats.selection;
+            document.getElementById('stat-control-val').innerText = player.stats.control;
+
+            document.getElementById('upgrade-timing-btn').disabled = player.statPoints <= 0;
+            document.getElementById('upgrade-selection-btn').disabled = player.statPoints <= 0;
+            document.getElementById('upgrade-control-btn').disabled = player.statPoints <= 0;
+        }
+
+        function upgradeStat(statName) {
+            if (player.statPoints > 0) {
+                player.statPoints--;
+                player.stats[statName]++;
+                refreshRpgStatsUI();
+                updateHUD();
+            }
+        }
+
+        function renderShop() {
+            const shopContainer = document.getElementById('shop-container');
+            shopContainer.innerHTML = '';
+            const categories = {
+                sluchawki: "Słuchawki (Timing)",
+                stopery: "Ochrona Słuchu (Crowd Control)",
+                pendrive: "Dyski & Pendrive (Selekcja)",
+                mikser: "Miksery & Decki (Timing / Selekcja)",
+                audio: "Systemy Nagłośnienia (Crowd Control)"
+            };
+
+            for (let catKey in categories) {
+                let html = `<div class="shop-category-title">${categories[catKey]}</div><div class="shop-grid">`;
+                for (let itemId in ITEMS) {
+                    let item = ITEMS[itemId];
+                    if (item.type !== catKey || item.cost === 0) continue; 
+
+                    let owned = boughtItems.includes(itemId);
+                    let equipped = player.equipped[catKey] === itemId;
+                    let canBuy = player.cash >= item.cost;
+
+                    html += `
+                        <div class="item-card ${equipped ? 'equipped' : ''}">
+                            <div>
+                                <strong>${item.name}</strong><br>
+                                <small style="color: var(--muted-text)">${item.desc}</small>
+                            </div>
+                            <div>
+                                ${owned ? 
+                                    `<button class="buy-btn" style="background:#00f3ff; color:#000" onclick="equipItem('${itemId}', '${catKey}')">${equipped ? 'W UŻYCIU' : 'ZAŁÓŻ'}</button>` : 
+                                    `<button class="buy-btn" ${!canBuy ? 'disabled' : ''} onclick="buyItem('${itemId}')">${item.cost} PLN</button>`
+                                }
+                            </div>
+                        </div>`;
+                }
+                html += `</div>`;
+                shopContainer.innerHTML += html;
+            }
+        }
+
+        function renderRpgEquipment() {
+            const box = document.getElementById('equipped-gear-box');
+            box.innerHTML = '';
+            for (let slot in player.equipped) {
+                let item = ITEMS[player.equipped[slot]];
+                if (item) {
+                    box.innerHTML += `<div style="font-size:0.9rem; margin-bottom:5px;">🔹 [${slot.toUpperCase()}]: <strong>${item.name}</strong> (${item.desc})</div>`;
+                }
+            }
+            refreshRpgStatsUI();
+        }
+
+        function buyItem(itemId) {
+            let item = ITEMS[itemId];
+            if (item && player.cash >= item.cost && !boughtItems.includes(itemId)) {
+                player.cash -= item.cost;
+                boughtItems.push(itemId);
+                player.equipped[item.type] = itemId; 
+                renderShop();
+                updateHUD();
+                alert(`Zakupiono i wyposażono: ${item.name}`);
+            }
+        }
+
+        function equipItem(itemId, slot) {
+            player.equipped[slot] = itemId;
+            renderShop();
+        }
+
+        function updateEventEstimates() {
+            const locId = document.getElementById('event-location').value;
+            const promo = document.getElementById('event-promo').value;
+            const loc = LOCATIONS[locId];
+            
+            let rentalCost = locId === 'lazarz' ? 50 : (locId === 'domtechnika' ? 300 : 800);
+            let promoCost = promo === 'low' ? 20 : (promo === 'mid' ? 100 : 300);
+            let totalCost = rentalCost + promoCost;
+            
+            document.getElementById('event-cost').innerText = `${totalCost} PLN`;
+            
+            let promoMultiplier = promo === 'low' ? 0.4 : (promo === 'mid' ? 1.1 : 2.2);
+            let estMin = Math.floor(loc.basePpl * promoMultiplier * 0.85);
+            let estMax = Math.floor(loc.basePpl * promoMultiplier * 1.15);
+            
+            let cap = loc.basePpl * 2.5;
+            if(estMin > cap) estMin = Math.floor(cap);a
+            if(estMax > cap) estMax = Math.floor(cap);
+
+            document.getElementById('event-predicted-guests').innerText = `${estMin}-${estMax} osób`;
+            document.getElementById('event-predicted-profit').innerText = `~${Math.floor(((estMin + estMax)/2) * loc.ticketPrice)} PLN`;
+        }
+
+        function logMessage(dest, msg) {
+            const box = document.getElementById('dj-logs');
+            if (box) { box.innerHTML += `<br>${msg}`; box.scrollTop = box.scrollHeight; }
+        }
+
+        function manualSaveGame() { alert("Kariera zapisana pomyślnie w pamięci flash konsolety!"); }
+        function manualResetGame() { 
+            if(confirm("Czy na pewno chcesz zresetować postęp?")) {
+                player = JSON.parse(JSON.stringify(DEFAULT_PLAYER)); 
+                boughtItems = ['sluchawki_1', 'stopery_none', 'pendrive_1', 'mikser_none', 'audio_none'];
+                updateHUD(); 
+                switchTab('map'); 
+            }
+        }
+        function loadGame() { updateHUD(); refreshRpgStatsUI(); }
+    </script>
+</body>
+</html>

@@ -662,16 +662,15 @@
                 <div class="map-bg-art"></div>
                 <div class="map-river"></div>
                 <div class="map-river-label">WARTA</div>
+                <div class="map-title">//POZNAŃ UNDERGROUND</div>
                 
-                <div class="map-title">// SIATKA GEOGRAFICZNA: POZNAŃ UNDERGROUND</div>
-                
-                <div class="district-label" style="top: 75%; left: 8%;">Św. Łazarz</div>
-                <div class="district-label" style="top: 50%; left: 35%;">Centrum</div>
-                <div class="district-label" style="top: 58%; left: 48%;">Garbary</div>
-                <div class="district-label" style="top: 22%; left: 68%;">Śródka</div>
+                <div class="district-label" style="top: 75%; left: 8%;">Łazarz</div>
+                <div class="district-label" style="top: 43%; left: 32%;">Dom Husa</div>
+                <div class="district-label" style="top: 58%; left: 48%;">Centrum</div>
+                <div class="district-label" style="top: 22%; left: 61%;">Stare Miasto</div>
 
                 <div class="location-node" style="top: 68%; left: 10%; border-color: var(--neon-cyan);" onclick="startGig('lazarz')">
-                    <h3>Piwnica Łazarz</h3>
+                    <h3>Piwnica na Łazarzu</h3>
                     <span>Wym. Rep: 0</span>
                 </div>
 
@@ -812,7 +811,7 @@
         <section id="view-event" class="view-section">
             
             <div id="event-locked-box" style="text-align: center; padding: 60px 20px;">
-                <h2 class="neon-text" style="color: var(--neon-pink); font-size: 2rem; margin-bottom: 20px;">🔒 PRODUKCJA ZABLOKOWANA</h2>
+                <h2 class="neon-text" style="color: var(--neon-pink); font-size: 2rem; margin-bottom: 20px;">🔒 OPCJA ZABLOKOWANA</h2>
                 <p style="font-size: 1.1rem; color: var(--muted-text); max-width: 500px; margin: 0 auto; line-height: 1.6;">
                     Nikt w mieście jeszcze Cię nie zna. Zdobądź doświadczenie grając na kontraktach w klubach, aby wyrobić sobie markę.<br><br>
                     <strong style="color: var(--neon-cyan); font-size: 1.2rem;">WYMAGANY POZIOM DJ-a: 10</strong>
@@ -825,7 +824,7 @@
                 <div class="form-group">
                     <label>Wybierz lokację pod własną markę:</label>
                     <select id="event-location" onchange="updateEventEstimates()">
-                        <option value="lazarz">Piwnica Łazarz (Wynajem: 50 PLN, Bilet: 10 PLN)</option>
+                        <option value="lazarz">Piwnica na Łazarzu (Wynajem: 50 PLN, Bilet: 10 PLN)</option>
                         <option value="domtechnika">Dom Technika (Wynajem: 300 PLN, Bilet: 25 PLN)</option>
                         <option value="schron">Schron (Wynajem: 800 PLN, Bilet: 40 PLN)</option>
                     </select>
@@ -897,7 +896,7 @@
         };
 
         const LOCATIONS = {
-            lazarz: { name: "Piwnica Łazarz", reqRep: 0, basePpl: 30, basePay: 70, bpmMin: 135, bpmMax: 142, ticketPrice: 10, totalTracks: 5 },
+            lazarz: { name: "Piwnica na Łazarzu", reqRep: 0, basePpl: 30, basePay: 70, bpmMin: 135, bpmMax: 142, ticketPrice: 10, totalTracks: 5 },
             domtechnika: { name: "Dom Technika", reqRep: 150, basePpl: 100, basePay: 300, bpmMin: 168, bpmMax: 174, ticketPrice: 25, totalTracks: 7 },
             schron: { name: "Schron", reqRep: 600, basePpl: 250, basePay: 800, bpmMin: 140, bpmMax: 145, ticketPrice: 40, totalTracks: 10 },
             tama: { name: "Tama", reqRep: 1500, basePpl: 550, basePay: 2000, bpmMin: 172, bpmMax: 178, ticketPrice: 55, totalTracks: 12 }

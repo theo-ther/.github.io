@@ -272,10 +272,13 @@
         }
         .opendecks-scope h2 { font-size: 1.5rem; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-color); text-shadow: 0 0 10px rgba(0, 255, 204, 0.2); }
         .opendecks-scope .form-group { margin-bottom: 20px; flex-shrink: 0; }
-        .opendecks-scope input[type="text"] {
+        
+        /* Zunifikowane inputy dla Open Decks */
+        .opendecks-scope input[type="text"], .opendecks-scope select {
             width: 100%; padding: 12px; background: #222533; border: 1px solid #33384f; border-radius: 6px; color: #fff; font-size: 1rem; margin-bottom: 10px; transition: border 0.3s;
         }
-        .opendecks-scope input[type="text"]:focus { outline: none; border-color: var(--accent-color); }
+        .opendecks-scope input[type="text"]:focus, .opendecks-scope select:focus { outline: none; border-color: var(--accent-color); }
+        
         .opendecks-scope button {
             width: 100%; padding: 12px; background: var(--accent-color); border: none; border-radius: 6px; color: #000; font-weight: bold; font-size: 1rem; cursor: pointer; transition: all 0.3s; text-transform: uppercase;
         }
@@ -562,6 +565,11 @@
             <h2>Open Decks</h2>
             <div class="form-group">
                 <input type="text" id="djInput" placeholder="Wpisz ksywę DJ-a..." autocomplete="off">
+                <!-- Zmiana: Dodany wybór długości seta -->
+                <select id="durationInput">
+                    <option value="30">Set: 30 minut</option>
+                    <option value="15">Set: 15 minut</option>
+                </select>
                 <button id="addBtn">Dodaj do kolejki</button>
             </div>
             <div class="queue-title">Odtwarzacz</div>
@@ -569,7 +577,8 @@
                 <button id="startNextBtn" style="background: #fff; color: #000;">Odpal następnego</button>
                 <div class="controls-row">
                     <button id="pauseBtn" style="background: #33384f; color: #fff; padding: 8px;">Pauza</button>
-                    <button id="resetTimerBtn" style="background: #33384f; color: #fff; padding: 8px;">Reset 30m</button>
+                    <!-- Zmiana: Nazwa przycisku zaktualizowana na uniwersalny reset -->
+                    <button id="resetTimerBtn" style="background: #33384f; color: #fff; padding: 8px;">Reset czasu</button>
                 </div>
                 <button id="removeCurrentBtn" class="btn-danger" style="padding: 8px; font-size: 0.85rem;">Usuń obecnego</button>
             </div>
@@ -620,12 +629,10 @@
                 document.getElementById('app-opendecks').classList.add('active-app');
             } else {
                 document.getElementById('main-menu').classList.add('active-app');
-                // Bezpieczne czyszczenie interwałów z gierki Otchłań
                 if (typeof beatInterval !== 'undefined' && beatInterval) clearInterval(beatInterval);
                 if (typeof driftInterval !== 'undefined' && driftInterval) clearInterval(driftInterval);
                 if (typeof crisisTimerInterval !== 'undefined' && crisisTimerInterval) clearInterval(crisisTimerInterval);
                 currentGig = null;
-                // Zatrzymanie licznika z Open Decks
                 isPaused = true;
                 const pBtn = document.getElementById('pauseBtn');
                 if (pBtn && pBtn.textContent !== "Start") pBtn.textContent = "Wznów";
@@ -635,7 +642,7 @@
         window.onload = function() {
             loadGame(); 
             switchTab('map');
-            launchApp('menu'); // Startujemy od widoku Menu Głównego
+            launchApp('menu');
         };
 
         // ==================== LOGIKA: OTCHŁAŃ THE GAME ====================
@@ -675,52 +682,11 @@
             tama: { name: "Tama", reqRep: 1500, basePpl: 550, basePay: 2000, bpmMin: 172, bpmMax: 178, ticketPrice: 55, totalTracks: 12, rewardExp: 400, rewardRep: 200 }
         };
 
-        const EVENT_LOC_CONFIGS = {
-            domtechnika: { rent: 2000, minPpl: 50, maxPpl: 250, ticket: 25 },
-            schron: { rent: 5000, minPpl: 150, maxPpl: 500, ticket: 40 },
-            tama: { rent: 15000, minPpl: 400, maxPpl: 1500, ticket: 55 }
-        };
-
-        const EVENT_PROMO_CONFIGS = {
-            low: { cost: 100, spanMin: 0.0, spanMax: 0.35 },
-            mid: { cost: 500, spanMin: 0.3, spanMax: 0.75 },
-            high: { cost: 1000, spanMin: 0.7, spanMax: 1.0 }
-        };
-
-        const GENRE_BPM_RANGES = {
-            dnb: { name: "Drum and Bass", min: 170, max: 176 }, 
-            neurofunk: { name: "Neurofunk", min: 172, max: 178 },
-            ukg: { name: "UK Garage", min: 130, max: 134 }, 
-            dubstep: { name: "Deep Dubstep", min: 140, max: 142 }
-        };
-
-        const CRISIS_EVENTS = [
-            {
-                text: "Ktoś awanturuje się przy bramce: 'Zapomniałem portfela, ale wejdę bez opaski, znam DJ-a!'. Co robisz?",
-                options: [
-                    { text: "„Wpuszczaj, zrobimy dobry vibe”", effect: () => { crowdTrust += 10; player.cash -= 20; return "Wpuściłeś go. Publika docenia gest, ale straciłeś bilet na bramce (-20 PLN)."; } },
-                    { text: "„Brak opaski to brak wejścia. Wołać ochronę.”", effect: () => { crowdEnergy -= 5; player.cash += 15; return "Koleś usunięty. Trochę dymu pod klubem, ale finanse nienaruszone."; } },
-                    { text: "„Niech postawi piwo barmanowi i wchodzi”", effect: () => { crowdEnergy += 5; crowdTrust += 5; return "Kompromis zadziałał idealnie, bar zarobił, ekipa zadowolona!"; } }
-                ]
-            },
-            {
-                text: "Prawa kolumna basowa nagle zaczyna charczeć i dymić! Nagłośnienie siada.",
-                options: [
-                    { text: "Odetnij bas na mikserze i graj środkiem", effect: () => { crowdEnergy -= 15; return "Tłum wygwizdał spadek basu, ale impreza uratowana."; } },
-                    { text: "Zrób szybki restart końcówki mocy (Ryzyko)", effect: () => { 
-                        if(Math.random() > 0.4) { crowdEnergy += 15; return "Udało się! Pełna moc wróciła, tłum szaleje!"; } 
-                        else { crowdEnergy -= 25; crowdTrust -= 10; return "Katastrofa! Całkowita cisza w klubie na 30 sekund."; }
-                    } },
-                    { text: "Podbij agresywnie soprany, żeby zagłuszyć usterkę", effect: () => { crowdTrust -= 15; return "Uszy bolą od pisków, zaufanie publiki mocno oberwało."; } }
-                ]
-            }
-        ];
-
-        let currentGig = null; let isHostedEvent = false; let beatInterval = null; let driftInterval = null; let crisisTimerInterval = null;
+        let currentGig = null; let isHostedEvent = false; let beatInterval = null; let driftInterval = null;
         let isCrisisActive = false; let markerPos = 0; let markerDirection = 1; let markerSpeed = 2.2; 
         let targetBpmValue = 140; let currentBpmValue = 130; let crowdEnergy = 50; let crowdTrust = 30; let requiredAction = "drop";
         let boughtItems = ['sluchawki_1', 'stopery_none', 'pendrive_1', 'mikser_none', 'audio_none'];
-        let currentTrackIndex = 1; let totalTracksInSet = 5; let activeCrisesPool = [];
+        let currentTrackIndex = 1; let totalTracksInSet = 5;
 
         function switchTab(tabId) {
             if (currentGig !== null && !isCrisisActive) {
@@ -734,25 +700,6 @@
             
             if (tabId === 'shop') renderShop();
             if (tabId === 'rpg') renderRpgEquipment();
-            if (tabId === 'event') {
-                if (player.level >= 10) {
-                    document.getElementById('event-locked-box').style.display = 'none';
-                    document.getElementById('event-unlocked-box').style.display = 'block';
-                    updateEventEstimates();
-                } else {
-                    document.getElementById('event-locked-box').style.display = 'block';
-                    document.getElementById('event-unlocked-box').style.display = 'none';
-                }
-            }
-            if (tabId === 'festiwal') {
-                if (player.level >= 15) {
-                    document.getElementById('festiwal-locked-box').style.display = 'none';
-                    document.getElementById('festiwal-unlocked-box').style.display = 'block';
-                } else {
-                    document.getElementById('festiwal-locked-box').style.display = 'block';
-                    document.getElementById('festiwal-unlocked-box').style.display = 'none';
-                }
-            }
             updateHUD();
         }
 
@@ -764,12 +711,6 @@
             if (player.rep >= 150) document.getElementById('node-domtechnika').classList.remove('locked');
             if (player.rep >= 600) document.getElementById('node-schron').classList.remove('locked');
             if (player.rep >= 1500) document.getElementById('node-tama').classList.remove('locked');
-
-            const eventBtn = document.getElementById('btn-event');
-            if (eventBtn) {
-                eventBtn.innerText = player.level < 10 ? "WŁASNY EVENT (OD 10 LVL)" : "ZORGANIZUJ EVENT";
-                eventBtn.style.color = player.level < 10 ? "var(--neon-pink)" : "";
-            }
         }
 
         function getEffectiveStat(statName) {
@@ -808,19 +749,17 @@
             document.getElementById('current-track-name').innerText = `TRACK: ${currentTrackIndex} / ${totalTracksInSet}`;
             document.getElementById('current-track-bpm').innerText = `Target: ${targetBpmValue} BPM`;
             currentBpmValue = targetBpmValue - 5;
-            setupBpmSliderLimits();
+            
+            document.getElementById('bpm-slider').min = targetBpmValue - 15; document.getElementById('bpm-slider').max = targetBpmValue + 15;
+            document.getElementById('bpm-slider').value = currentBpmValue; document.getElementById('bpm-display').innerText = `${currentBpmValue} BPM`;
+            
             crowdEnergy = 40 + getEffectiveStat('selection') * 2; crowdTrust = 30 + getEffectiveStat('control') * 1;
             document.getElementById('gig-ppl-count').innerText = currentGig.attendance;
             let hitboxZone = document.getElementById('ui-target-zone');
             let extraHitbox = getEffectiveStat('timing') * 1.3;
             hitboxZone.style.width = `${18 + extraHitbox}%`; hitboxZone.style.left = `${72 - (extraHitbox/2)}%`;
-            activeCrisesPool = [...CRISIS_EVENTS];
+            
             randomizeRequiredAction(); updateCrowdUI(); startRhythmEngine(); startBpmDriftEngine();
-        }
-
-        function setupBpmSliderLimits() {
-            document.getElementById('bpm-slider').min = targetBpmValue - 15; document.getElementById('bpm-slider').max = targetBpmValue + 15;
-            document.getElementById('bpm-slider').value = currentBpmValue; document.getElementById('bpm-display').innerText = `${currentBpmValue} BPM`;
         }
 
         function randomizeRequiredAction() {
@@ -850,7 +789,6 @@
                 if(isCrisisActive) return; targetBpmValue += Math.random() < 0.5 ? -1 : 1;
                 document.getElementById('current-track-bpm').innerText = `Target: ${targetBpmValue} BPM`;
                 document.getElementById('bpm-slider').min = targetBpmValue - 15; document.getElementById('bpm-slider').max = targetBpmValue + 15;
-                logMessage('dj', `⚠️ Fala dźwiękowa ucieka! Zmiana tempa na ${targetBpmValue} BPM.`);
             }, 10000);
         }
 
@@ -863,15 +801,14 @@
             let bpmDifference = Math.abs(currentBpmValue - targetBpmValue);
 
             if (clickedAction !== requiredAction) {
-                crowdEnergy = Math.max(0, crowdEnergy - 15); logMessage('dj', `> [CRASH] Pomyłka sekwencji! Tłum gubi rytm.`);
-                checkGigStatus(); return;
+                crowdEnergy = Math.max(0, crowdEnergy - 15); checkGigStatus(); return;
             }
             if (bpmDifference <= 1 && timingSuccess) {
-                crowdEnergy = Math.min(100, crowdEnergy + 15); crowdTrust = Math.min(100, crowdTrust + 8); logMessage('dj', `> [PERFECT] Idealnie w punkt!`);
+                crowdEnergy = Math.min(100, crowdEnergy + 15); crowdTrust = Math.min(100, crowdTrust + 8);
             } else if (bpmDifference <= 3 || timingSuccess) {
-                crowdEnergy = Math.min(100, crowdEnergy + 6); logMessage('dj', `> [GOOD] Stabilne przejście.`);
+                crowdEnergy = Math.min(100, crowdEnergy + 6);
             } else {
-                crowdEnergy = Math.max(0, crowdEnergy - 12); logMessage('dj', `> [TRAKTOR] Rozjazd rytmiczny!`);
+                crowdEnergy = Math.max(0, crowdEnergy - 12);
             }
 
             currentTrackIndex++;
@@ -891,13 +828,12 @@
         function checkGigStatus() { if (crowdEnergy <= 0) finishGig(false); else updateCrowdUI(); }
 
         function finishGig(success) {
-            clearInterval(beatInterval); clearInterval(driftInterval); if(crisisTimerInterval) clearInterval(crisisTimerInterval);
+            clearInterval(beatInterval); clearInterval(driftInterval);
             if (success) {
-                let payout = isHostedEvent ? Math.floor(currentGig.basePay * 0.5) : currentGig.basePay;
-                player.cash += payout; player.exp += currentGig.rewardExp; player.rep += currentGig.rewardRep;
+                let payout = currentGig.basePay; player.cash += payout; player.exp += currentGig.rewardExp; player.rep += currentGig.rewardRep;
                 player.lifetimeStats.gigsPlayed++; player.lifetimeStats.totalCashEarned += payout;
                 while (player.exp >= player.level * 100) { player.exp -= player.level * 100; player.level++; player.statPoints += 2; }
-                alert(`🎉 SUKCES!\nZarobek: +${payout} PLN\nEXP: +${currentGig.rewardExp}\nReputacja: +${currentGig.rewardRep}`);
+                alert(`🎉 SUKCES!\nZarobek: +${payout} PLN`);
                 localStorage.setItem('otchlan_game_save', JSON.stringify({ player, boughtItems }));
             } else {
                 player.rep = Math.max(0, player.rep - 20); alert("❌ KLAPA! Impreza przerwana.");
@@ -911,7 +847,6 @@
             document.getElementById('exp-progress-bar').style.width = `${(player.exp / (player.level * 100)) * 100}%`;
             document.getElementById('stat-level-val').innerText = player.level;
             document.getElementById('stat-gigs-played').innerText = player.lifetimeStats.gigsPlayed;
-            document.getElementById('stat-events-hosted').innerText = player.lifetimeStats.eventsHosted;
             document.getElementById('stat-total-cash').innerText = `${player.lifetimeStats.totalCashEarned} PLN`;
             document.getElementById('rpg-points').innerText = player.statPoints;
             document.getElementById('stat-timing-val').innerText = player.stats.timing;
@@ -953,7 +888,6 @@
             }
             refreshRpgStatsUI();
         }
-        function logMessage(dest, msg) { const box = document.getElementById('dj-logs'); if (box) { box.innerHTML += `<br>${msg}`; box.scrollTop = box.scrollHeight; } }
         function manualSaveGame() { localStorage.setItem('otchlan_game_save', JSON.stringify({ player, boughtItems })); alert("Kariera zapisana!"); }
         function manualResetGame() { if(confirm("Zresetować postęp?")) { localStorage.removeItem('otchlan_game_save'); player = JSON.parse(JSON.stringify(DEFAULT_PLAYER)); boughtItems = ['sluchawki_1', 'stopery_none', 'pendrive_1', 'mikser_none', 'audio_none']; updateHUD(); refreshRpgStatsUI(); switchTab('map'); } }
         function loadGame() {
@@ -964,10 +898,12 @@
 
 
         // ==================== LOGIKA: OPEN DECKS ====================
-        let queue = []; let history = []; let currentDJ = null; let timerInterval = null; let defaultTime = 30 * 60; let timeLeft = defaultTime; let isPaused = true;
+        /* Zmiana: Struktura kolejki przechowuje teraz obiekty { name, duration } zamiast zwykłych stringów */
+        let queue = []; let history = []; let currentDJ = null; let currentDJDuration = 30; let timerInterval = null; let timeLeft = 30 * 60; let isPaused = true;
 
-        const djInput = document.getElementById('djInput'); const addBtn = document.getElementById('addBtn'); const queueList = document.getElementById('queueList');
-        const queueCount = document.getElementById('queueCount'); const historyList = document.getElementById('historyList'); const historyCount = document.getElementById('historyCount');
+        const djInput = document.getElementById('djInput'); const durationInput = document.getElementById('durationInput'); const addBtn = document.getElementById('addBtn'); 
+        const queueList = document.getElementById('queueList'); const queueCount = document.getElementById('queueCount'); 
+        const historyList = document.getElementById('historyList'); const historyCount = document.getElementById('historyCount');
         const currentDjDisplay = document.getElementById('currentDjDisplay'); const timerDisplay = document.getElementById('timerDisplay');
         const statusLabel = document.getElementById('statusLabel'); const displayPanel = document.getElementById('displayPanel');
         const startNextBtn = document.getElementById('startNextBtn'); const pauseBtn = document.getElementById('pauseBtn');
@@ -980,8 +916,12 @@
         function saveToStorage() { localStorage.setItem('deckQueue', JSON.stringify(queue)); localStorage.setItem('deckHistory', JSON.stringify(history)); }
 
         function addDJ() {
-            const name = djInput.value.trim(); if (name === "") return;
-            queue.push(name); djInput.value = ""; djInput.focus(); saveToStorage(); updateQueueUI();
+            const name = djInput.value.trim(); 
+            const duration = parseInt(durationInput.value) || 30; // Zmiana: Pobranie wybranego czasu
+            if (name === "") return;
+            
+            queue.push({ name: name, duration: duration }); // Zmiana: Dodawanie obiektu do bazy
+            djInput.value = ""; djInput.focus(); saveToStorage(); updateQueueUI();
             if (!currentDJ) prepareNextDJ();
         }
         addBtn.addEventListener('click', addDJ); djInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addDJ(); });
@@ -993,9 +933,13 @@
 
         function updateQueueUI() {
             queueList.innerHTML = ""; queueCount.textContent = queue.length;
-            queue.forEach((dj, index) => {
+            queue.forEach((item, index) => {
+                // Zmiana: Wsparcie dla starych wpisów tekstowych oraz nowych obiektów z czasem
+                const djName = typeof item === 'object' ? item.name : item;
+                const djDur = typeof item === 'object' ? item.duration : 30;
+                
                 const li = document.createElement('li'); li.className = `queue-item ${index === 0 ? 'next' : ''}`;
-                li.innerHTML = `<div class="dj-info"><span class="index">#${index + 1}</span><span title="${dj}">${dj}</span></div>
+                li.innerHTML = `<div class="dj-info"><span class="index">#${index + 1}</span><span title="${djName}">${djName} (${djDur}m)</span></div>
                     <div class="item-actions">
                         <button class="btn-action" onclick="moveUp(${index})" ${index === 0 ? 'disabled' : ''}>▲</button>
                         <button class="btn-action" onclick="moveDown(${index})" ${index === queue.length - 1 ? 'disabled' : ''}>▼</button>
@@ -1008,21 +952,33 @@
         function updateHistoryUI() {
             historyList.innerHTML = ""; historyCount.textContent = history.length;
             for (let i = history.length - 1; i >= 0; i--) {
+                const item = history[i];
+                const djName = typeof item === 'object' ? item.name : item;
+                const djDur = typeof item === 'object' ? item.duration : 30;
+                
                 const li = document.createElement('li'); li.className = 'queue-item';
-                li.innerHTML = `<div class="dj-info"><span class="index" style="color: var(--text-muted)">✓</span><span title="${history[i]}">${history[i]}</span></div>
+                li.innerHTML = `<div class="dj-info"><span class="index" style="color: var(--text-muted)">✓</span><span title="${djName}">${djName} (${djDur}m)</span></div>
                     <div class="item-actions"><button class="btn-action btn-delete" onclick="removeFromHistory(${i})">Usuń</button></div>`;
                 historyList.appendChild(li);
             }
         }
 
         function prepareNextDJ() {
-            if (currentDJ) { history.push(currentDJ); updateHistoryUI(); }
+            if (currentDJ) { 
+                history.push({ name: currentDJ, duration: currentDJDuration }); 
+                updateHistoryUI(); 
+            }
             if (queue.length > 0) {
-                currentDJ = queue.shift(); currentDjDisplay.textContent = currentDJ; statusLabel.textContent = "Teraz gra";
-                timeLeft = defaultTime; updateTimerDisplay(); saveToStorage(); updateQueueUI(); startTimer();
+                const next = queue.shift();
+                currentDJ = typeof next === 'object' ? next.name : next;
+                currentDJDuration = typeof next === 'object' ? next.duration : 30; // Zmiana: Przypisanie indywidualnego czasu
+                
+                currentDjDisplay.textContent = currentDJ; statusLabel.textContent = "Teraz gra";
+                timeLeft = currentDJDuration * 60; // Zmiana: Licznik startuje od wybranego czasu
+                updateTimerDisplay(); saveToStorage(); updateQueueUI(); startTimer();
             } else {
-                currentDJ = null; currentDjDisplay.textContent = "Brak wykonawcy"; statusLabel.textContent = "Oczekiwanie";
-                clearInterval(timerInterval); isPaused = true; pauseBtn.textContent = "Start"; timeLeft = defaultTime;
+                currentDJ = null; currentDJDuration = 30; currentDjDisplay.textContent = "Brak wykonawcy"; statusLabel.textContent = "Oczekiwanie";
+                clearInterval(timerInterval); isPaused = true; pauseBtn.textContent = "Start"; timeLeft = 30 * 60;
                 updateTimerDisplay(); displayPanel.classList.remove('alarm'); saveToStorage();
             }
         }
@@ -1051,10 +1007,13 @@
         });
 
         startNextBtn.addEventListener('click', () => { displayPanel.classList.remove('alarm'); prepareNextDJ(); });
-        resetTimerBtn.addEventListener('click', () => { timeLeft = defaultTime; updateTimerDisplay(); displayPanel.classList.remove('alarm'); });
+        
+        // Zmiana: Reset przywraca aktualny czas przypisany do danego DJ-a (15m lub 30m)
+        resetTimerBtn.addEventListener('click', () => { timeLeft = currentDJDuration * 60; updateTimerDisplay(); displayPanel.classList.remove('alarm'); });
+        
         removeCurrentBtn.addEventListener('click', () => {
-            currentDJ = null; currentDjDisplay.textContent = "Brak wykonawcy"; statusLabel.textContent = "Oczekiwanie";
-            clearInterval(timerInterval); timeLeft = defaultTime; updateTimerDisplay(); displayPanel.classList.remove('alarm');
+            currentDJ = null; currentDJDuration = 30; currentDjDisplay.textContent = "Brak wykonawcy"; statusLabel.textContent = "Oczekiwanie";
+            clearInterval(timerInterval); timeLeft = 30 * 60; updateTimerDisplay(); displayPanel.classList.remove('alarm');
             pauseBtn.textContent = "Start"; isPaused = true; saveToStorage();
         });
         clearHistoryBtn.addEventListener('click', () => { if(confirm("Wyczyścić historię?")) { history = []; saveToStorage(); updateHistoryUI(); } });

@@ -2304,6 +2304,24 @@
         font-size:.65rem;
         letter-spacing:1px;
     }
+
+    /* v3.7: alerty progresji */
+    .tab-btn.quest-ready {
+        color:#d9ffd3 !important;
+        border-color:#39ff14 !important;
+        background:linear-gradient(180deg,#0d2712,#07150a) !important;
+        box-shadow:0 0 10px rgba(57,255,20,.35), inset 0 0 18px rgba(57,255,20,.08) !important;
+        animation:questReadyPulse 1.35s ease-in-out infinite alternate;
+    }
+    @keyframes questReadyPulse {
+        from { box-shadow:0 0 8px rgba(57,255,20,.25), inset 0 0 12px rgba(57,255,20,.05); }
+        to { box-shadow:0 0 20px rgba(57,255,20,.6), inset 0 0 22px rgba(57,255,20,.12); }
+    }
+    .tab-btn.booking-locked {
+        opacity:.42;
+        cursor:not-allowed;
+        filter:saturate(.35);
+    }
 </style>
 
 </head>
@@ -2341,7 +2359,7 @@
                 <section class="instruction-card">
                     <span class="instruction-num">02</span>
                     <h3>MAPA, DNI I BOOKINGI</h3>
-                    <p>Na mapie wybierasz dostępny klub. Każdy rozegrany lub przerwany set przesuwa kalendarz o 1 dzień. Oferty bookingów odświeżają się co tydzień. Po przyjęciu booking ma konkretny dzień występu — możesz zagrać go tylko tego dnia. Jeśli go przegapisz, tracisz reputację.</p>
+                    <p>Na mapie wybierasz dostępny klub. Każdy rozegrany lub przerwany set przesuwa kalendarz o 1 dzień. Bookingi odblokowują się po zdobyciu 2000 punktów reputacji. Oferty bookingów odświeżają się co tydzień. Po przyjęciu booking ma konkretny dzień występu — możesz zagrać go tylko tego dnia. Jeśli go przegapisz, tracisz reputację.</p>
                 </section>
                 <section class="instruction-card">
                     <span class="instruction-num">03</span>
@@ -3678,7 +3696,7 @@
     const V2_PERKS = {
         beatmatch_veteran: { name:'Beatmatch Veteran', cost:1, desc:'Marker rytmu porusza się 15% wolniej.' },
         selector: { name:'Selector Instinct', cost:1, desc:'+5 energii tłumu na starcie każdego seta.' },
-        crisis_manager: { name:'Cold Blood', cost:1, desc:'Więcej czasu na kryzysy i mocniejszy skill check.' },
+        crisis_manager: { name:'Cold Blood', cost:1, reqLevel:11, desc:'Więcej czasu na kryzysy i mocniejszy skill check. Dostępny od 11 poziomu.' },
         promoter_network: { name:'Promoter Network', cost:1, desc:'-10% kosztów usług przy własnych eventach.' },
         basement_cred: { name:'Basement Cred', cost:1, desc:'+25% reputacji Underground i +5 startowej energii w małych klubach.' },
         crate_digger: { name:'Prepared Set', cost:1, desc:'Startujesz bliżej właściwego BPM i masz mniejsze ryzyko przycięcia nośnika.' },
@@ -3827,6 +3845,7 @@
             bookingWins:0,
             totalSpent:0,
             spendFixV33:false,
+            coldBloodLevelFixV37:false,
             careerHistory:[],
             records:{ bestEnergy:0, bestAttendance:0, biggestPayout:0, perfects:0, completedSets:0 },
             recordsFixV32:false,
@@ -3893,11 +3912,20 @@
             s.bookingWins = Math.max(Number(s.bookingWins) || 0, knownBookingWins);
             s.spendFixV33 = true;
         }
+        // v3.7: Cold Blood ma być dostępny dopiero od 11 poziomu.
+        // Jeśli stary save kupił go wcześniej, perk wraca do blokady, a punkt rozwoju jest zwracany.
+        if (!s.coldBloodLevelFixV37) {
+            if (s.perks.crisis_manager && (Number(player.level)||1) < 11) {
+                s.perks.crisis_manager = false;
+                player.statPoints = (Number(player.statPoints)||0) + (V2_PERKS.crisis_manager.cost||1);
+            }
+            s.coldBloodLevelFixV37 = true;
+        }
         if (!Number.isFinite(Number(s.totalSpent))) s.totalSpent = 0;
         if (!Number.isFinite(Number(s.bookingWins))) s.bookingWins = 0;
         if (!s.bookingSerial) s.bookingSerial = 1;
         if (!s.week) s.week = Math.floor((s.day-1)/7)+1;
-        if (s.bookings.length === 0) generateBookings(false);
+        if (s.bookings.length === 0 && (Number(player.rep) || 0) >= BOOKING_REP_REQUIREMENT) generateBookings(false);
     }
 
     function addRep(kind, amount){
@@ -3927,7 +3955,10 @@
         v2().trends[cold] = +(0.72 + Math.random()*0.12).toFixed(2);
     }
 
+    const BOOKING_REP_REQUIREMENT = 2000;
+
     function generateBookings(save=true, weeklyRefresh=false){
+        if ((Number(player.rep) || 0) < BOOKING_REP_REQUIREMENT) return;
         ensureV2BaseOnly();
         const state = player.v2;
 
@@ -4012,6 +4043,7 @@
     }
 
     function acceptBooking(id){
+        if((Number(player.rep)||0) < BOOKING_REP_REQUIREMENT) return;
         const b = v2().bookings.find(x=>x.id===id);
         if (!b || b.status!=='open' || b.dueDay < v2().day) return;
         b.status='accepted';
@@ -4021,6 +4053,7 @@
     }
 
     function playBooking(id){
+        if((Number(player.rep)||0) < BOOKING_REP_REQUIREMENT) return;
         const b = v2().bookings.find(x=>x.id===id);
         if (!b || b.status!=='accepted') return;
         if (b.dueDay !== v2().day) {
@@ -4071,6 +4104,7 @@
 
     function buyPerk(id){
         const p=V2_PERKS[id]; if(!p || v2().perks[id] || player.statPoints < p.cost) return;
+        if (p.reqLevel && player.level < p.reqLevel) { alert(`Ten perk odblokowuje się od poziomu ${p.reqLevel}.`); return; }
         player.statPoints -= p.cost; v2().perks[id]=true;
         applyPerkRuntime(); saveGameState(); refreshRpgStatsUI(); renderDjPerks(); renderCareer(); renderQuests();
     }
@@ -4137,7 +4171,7 @@
         if(g.cash){ player.cash+=g.cash; player.lifetimeStats.totalCashEarned+=g.cash; }
         if(g.reps) Object.entries(g.reps).forEach(([kind,amount])=>addRep(kind,amount));
         if(g.statPoints) player.statPoints+=g.statPoints;
-        saveGameState(); updateHUD(); refreshRpgStatsUI(); renderDjPerks(); renderCareer(); renderQuests();
+        saveGameState(); updateHUD(); refreshRpgStatsUI(); renderDjPerks(); renderCareer(); renderQuests(); updateQuestMenuHighlight();
     }
 
     function addQuestProgress(type, amount=1){
@@ -4273,7 +4307,25 @@
         return `<div class="form-group"><label>${label}:</label><select id="${id}">${Object.entries(obj).map(([k,v])=>`<option value="${k}">${esc(v.name)}${v.cost?` (+${v.cost} PLN)`:''}</option>`).join('')}</select></div>`;
     }
 
+    function updateBookingAccess(){
+        const btn=document.getElementById('btn-calendar');
+        if(!btn) return;
+        const unlocked=(Number(player.rep)||0) >= BOOKING_REP_REQUIREMENT;
+        btn.disabled=!unlocked;
+        btn.classList.toggle('booking-locked', !unlocked);
+        btn.textContent=unlocked ? 'BOOKINGI' : `BOOKINGI (OD ${BOOKING_REP_REQUIREMENT} REP)`;
+        btn.title=unlocked ? 'Bookingi i kalendarz' : `Odblokuj ${BOOKING_REP_REQUIREMENT} punktów reputacji`;
+        if(unlocked && player.v2 && v2().bookings.length===0){
+            generateBookings(false);
+            saveGameState();
+        }
+    }
+
     function switchV2Tab(id){
+        if(id==='calendar' && (Number(player.rep)||0) < BOOKING_REP_REQUIREMENT){
+            alert(`Bookingi odblokują się po zdobyciu ${BOOKING_REP_REQUIREMENT} punktów reputacji.`);
+            return;
+        }
         switchTab(id);
         if(id==='rpg') renderCareer();
         if(id==='quests') renderQuests();
@@ -4288,10 +4340,33 @@
 
     function renderDjPerks(){
         const root=document.getElementById('v2-dj-perks'); if(!root) return;
-        root.innerHTML=Object.entries(V2_PERKS).map(([id,p])=>`<div class="v2-perk ${v2().perks[id]?'owned':''} ${id==='sync_button'?'sync-bait':''}"><strong>${p.name}</strong><small>${p.desc}</small>${v2().perks[id]?'<span class="v2-badge">AKTYWNY</span>':`<button class="v2-mini-btn" ${player.statPoints<p.cost?'disabled':''} onclick="buyPerkV2('${id}')">ODBLOKUJ · ${p.cost} pkt rozwoju</button>`}</div>`).join('');
+        root.innerHTML=Object.entries(V2_PERKS).map(([id,p])=>{ const levelLocked=!!(p.reqLevel && player.level<p.reqLevel); return `<div class="v2-perk ${v2().perks[id]?'owned':''} ${id==='sync_button'?'sync-bait':''} ${levelLocked?'locked':''}"><strong>${p.name}</strong><small>${p.desc}</small>${v2().perks[id]?'<span class="v2-badge">AKTYWNY</span>':levelLocked?`<span class="v2-locked">🔒 OD ${p.reqLevel} LVL</span>`:`<button class="v2-mini-btn" ${player.statPoints<p.cost?'disabled':''} onclick="buyPerkV2('${id}')">ODBLOKUJ · ${p.cost} pkt rozwoju</button>`}</div>`; }).join('');
+    }
+
+    function syncCareerRecords(){
+        const state=v2();
+        const r=state.records || (state.records={bestEnergy:0,bestAttendance:0,biggestPayout:0,perfects:0,completedSets:0});
+        ['bestEnergy','bestAttendance','biggestPayout','perfects','completedSets'].forEach(k=>{
+            const n=Number(r[k]); r[k]=Number.isFinite(n)?Math.max(0,n):0;
+        });
+        let knownPerfects=0, knownCompleted=0;
+        for(const h of (state.careerHistory||[])){
+            if(!h) continue;
+            r.bestEnergy=Math.max(r.bestEnergy, Number(h.peakEnergy ?? h.energy) || 0);
+            r.bestAttendance=Math.max(r.bestAttendance, Number(h.attendance) || 0);
+            r.biggestPayout=Math.max(r.biggestPayout, Number(h.payout) || 0);
+            if(Number.isFinite(Number(h.perfects))) knownPerfects += Number(h.perfects)||0;
+            if(h.type && h.type!=='PRZERWANY') knownCompleted++;
+        }
+        r.perfects=Math.max(r.perfects,knownPerfects);
+        r.completedSets=Math.max(r.completedSets,knownCompleted);
+        r.bestEnergy=Math.round(r.bestEnergy);
+        r.bestAttendance=Math.round(r.bestAttendance);
+        r.biggestPayout=Math.round(r.biggestPayout);
     }
 
     function renderCareer(){
+        syncCareerRecords();
         const rpgRoot=document.getElementById('view-rpg'); if(!rpgRoot) return;
         let root=document.getElementById('v2-career-panel');
         if(!root){ root=document.createElement('div'); root.id='v2-career-panel'; root.style.marginTop='30px'; rpgRoot.appendChild(root); }
@@ -4305,6 +4380,23 @@
 
     function repCard(name,val,desc){return `<div class="v2-stat-card"><strong>${name}</strong><b>${val}</b><small>${desc}</small></div>`;}
 
+    function readyQuestCount(){
+        syncQuestProgress();
+        return Object.entries(V2_QUESTS).filter(([id,d])=>{
+            const q=v2().quests[id];
+            return q && !q.claimed && (Number(q.progress)||0) >= d.goal;
+        }).length;
+    }
+
+    function updateQuestMenuHighlight(){
+        const btn=document.getElementById('btn-quests');
+        if(!btn || !player.v2) return;
+        const ready=readyQuestCount();
+        btn.classList.toggle('quest-ready', ready>0);
+        btn.textContent=ready>0 ? `QUESTY (${ready})` : 'QUESTY';
+        btn.title=ready>0 ? `${ready} ${ready===1?'nagroda gotowa':'nagrody gotowe'} do odebrania` : 'Questy';
+    }
+
     function renderQuests(){
         const root=document.getElementById('view-quests'); if(!root) return;
         syncQuestProgress();
@@ -4313,6 +4405,8 @@
         const ready=entries.filter(([id,d])=>{const q=v2().quests[id];return q&&!q.claimed&&q.progress>=d.goal;}).length;
         const categories=[...new Set(entries.map(([,d])=>d.category||'INNE'))];
         root.innerHTML=`<h2 class="neon-text">✓ QUESTY</h2><p class="v2-lead">Zadania rozwijają się razem z karierą. Część zalicza się automatycznie ze statystyk, a część wymaga konkretnych działań podczas setów i własnych eventów.</p><div class="v2-info-box">UKOŃCZONE: <strong>${claimed}/${entries.length}</strong> · GOTOWE DO ODEBRANIA: <strong>${ready}</strong> · WYDANO ŁĄCZNIE: <strong>${Math.round(v2().totalSpent||0)} PLN</strong> · KUPIONY SPRZĘT: <strong>${boughtItems.filter(id=>ITEMS[id]&&ITEMS[id].cost>0).length}</strong></div>${categories.map(cat=>`<div class="v2-section-title">${cat}</div><div class="v2-quest-grid">${entries.filter(([,d])=>(d.category||'INNE')===cat).map(([id,d])=>questCard(id,d)).join('')}</div>`).join('')}`;
+
+        updateQuestMenuHighlight();
     }
 
     function questCard(id,d){ const q=v2().quests[id]; const done=q.progress>=d.goal; const shown=Math.min(d.goal,Math.floor(q.progress)); return `<div class="v2-quest ${q.claimed?'claimed':''}"><strong>${d.title}</strong><span>${d.desc}</span><div class="v2-progress"><i style="width:${Math.min(100,q.progress/d.goal*100)}%"></i></div><small>${shown.toLocaleString('pl-PL')}/${d.goal.toLocaleString('pl-PL')} · NAGRODA: ${d.reward}</small>${q.claimed?'<span class="v2-badge">ODEBRANE</span>':done?`<button class="v2-mini-btn" onclick="claimQuestV2('${id}')">ODBIERZ</button>`:''}</div>`; }
@@ -4327,6 +4421,7 @@
 
     function renderCalendar(){
         const root=document.getElementById('view-calendar'); if(!root) return;
+        if((Number(player.rep)||0) < BOOKING_REP_REQUIREMENT){ root.innerHTML=`<h2 class="neon-text">📅 BOOKINGI / KALENDARZ</h2><div class="v2-info-box">🔒 BOOKINGI ODBLOKUJĄ SIĘ PRZY <strong>${BOOKING_REP_REQUIREMENT} REP</strong>.<br>Aktualnie: <strong>${Math.round(player.rep||0)} REP</strong>.</div>`; return; }
         const sync=resolvePassedBookings(); if(sync.changed) saveGameState();
         root.innerHTML=`<h2 class="neon-text">📅 BOOKINGI / KALENDARZ</h2><div class="v2-calendar-head"><div>DZIEŃ <strong>${v2().day}</strong> · TYDZIEŃ <strong>${v2().week}</strong><br><span class="v2-muted">1 rozegrany set = 1 dzień</span></div><span class="v2-badge">NOWE OFERTY CO TYDZIEŃ</span></div><p class="v2-lead">Przyjęty booking ma konkretny termin. Możesz zagrać go <strong>tylko dokładnie w wyznaczonym dniu</strong>. Jeśli tego dnia zagrasz coś innego i kalendarz przejdzie dalej, booking zostanie oznaczony jako przegapiony i stracisz reputację.</p><div class="v2-booking-grid">${v2().bookings.map(b=>bookingCard(b)).join('')}</div>`;
     }
@@ -4490,7 +4585,8 @@
         if(v2Session){v2Session.maxEnergy=Math.max(v2Session.maxEnergy,crowdEnergy);if(crowdEnergy>=90)addQuestProgress('crowd90',1);}
         if(isHostedEvent&&(currentTrackIndex===2||currentTrackIndex===5)){
             const reduction=currentGig.v2Event?.security?.crisisReduction||0, chance=Math.max(0.25,0.92-reduction);
-            if(Math.random()<chance){if(crisisStartTimeout)clearTimeout(crisisStartTimeout);crisisStartTimeout=setTimeout(()=>{crisisStartTimeout=null;if(currentGig&&isHostedEvent)triggerCrisisQuestion();},800);}
+            const guaranteedFirstCrisis = currentTrackIndex===2 && (!v2Session || (Number(v2Session.crises)||0)===0);
+            if(guaranteedFirstCrisis || Math.random()<chance){if(crisisStartTimeout)clearTimeout(crisisStartTimeout);crisisStartTimeout=setTimeout(()=>{crisisStartTimeout=null;if(currentGig&&isHostedEvent)triggerCrisisQuestion();},650);}
         }
         currentTrackIndex++;
         if(currentTrackIndex>totalTracksInSet){finishGig(crowdEnergy>=25);return;}
@@ -4535,7 +4631,7 @@
             if(success) v2().bookingWins=(Number(v2().bookingWins)||0)+1;
         }
         const report={success,title:gigSnapshot.name,perfects:session.perfects,goods:session.goods,misses:session.misses,wrong:session.wrong,avgBpm:session.actions?session.bpmDiffSum/session.actions:0,energy:Math.round(crowdEnergy),trust:Math.round(crowdTrust),attendance:gigSnapshot.attendance||0,payout,exp:expGain,cityRep,repGains:gains,type:isHostedEvent?'EVENT':(bookingId?'BOOKING':'KONTRAKT')};
-        v2().lastReport=report;v2().careerHistory.push({day:v2().day,title:gigSnapshot.name,success,type:report.type,payout,energy:report.energy,attendance:report.attendance});if(v2().careerHistory.length>40)v2().careerHistory.shift();
+        v2().lastReport=report;v2().careerHistory.push({day:v2().day,title:gigSnapshot.name,success,type:report.type,payout,energy:report.energy,peakEnergy,perfects:Number(session.perfects)||0,attendance:report.attendance});if(v2().careerHistory.length>40)v2().careerHistory.shift();
         currentGig=null;v2Session=null;
         report.calendar=advanceCareerDay();
         syncQuestProgress();saveGameState();refreshRpgStatsUI();renderDjPerks();updateHUD();switchV2Tab('rpg');renderCareer();renderQuests();showReport(report);
@@ -4569,15 +4665,15 @@
     };
 
     loadGame = function(){ ORIG.loadGame(); ensureV2(); syncQuestProgress(); const sync=resolvePassedBookings(); if(sync.changed) saveGameState(); applyPerkRuntime(); };
-    updateHUD = function(){ ORIG.updateHUD(); if(player.v2)renderV2Hud(); };
+    updateHUD = function(){ ORIG.updateHUD(); if(player.v2){renderV2Hud(); updateQuestMenuHighlight(); updateBookingAccess();} };
     renderRpgEquipment = function(){ ORIG.renderRpgEquipment(); if(player.v2){renderV2Hud(); renderDjPerks(); renderCareer();} };
     upgradeStat = function(statName){ ORIG.upgradeStat(statName); renderDjPerks(); };
-    manualResetGame = function(){ ORIG.manualResetGame(); ensureV2(); applyPerkRuntime(); initUi(); renderV2Hud(); renderDjPerks(); renderCareer(); renderContacts(); renderCalendar(); };
+    manualResetGame = function(){ ORIG.manualResetGame(); ensureV2(); applyPerkRuntime(); initUi(); renderV2Hud(); renderDjPerks(); renderCareer(); renderQuests(); renderContacts(); renderCalendar(); updateQuestMenuHighlight(); updateBookingAccess(); };
 
     const oldOnload=window.onload;
     window.onload=function(ev){
         if(oldOnload)oldOnload.call(window,ev);
-        ensureV2();initUi();applyPerkRuntime();renderV2Hud();renderDjPerks();renderCareer();renderQuests();renderContacts();renderCalendar();updateEventEstimates();
+        ensureV2();initUi();applyPerkRuntime();renderV2Hud();renderDjPerks();renderCareer();renderQuests();renderContacts();renderCalendar();updateQuestMenuHighlight();updateBookingAccess();updateEventEstimates();
     };
 
     // Public handlers used by generated HTML.

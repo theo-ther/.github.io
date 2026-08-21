@@ -2352,6 +2352,223 @@
         @media (max-width: 700px){ .sc-gig-player iframe { height: 220px; } }
 </style>
 
+<style>
+
+    /* =========================================================
+       v3.9 — TUTORIAL PIERWSZEGO SETA
+       ========================================================= */
+    .first-gig-tutorial-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 14000;
+        background:
+            radial-gradient(circle at 50% 16%, rgba(57,255,20,.10), transparent 34%),
+            rgba(0, 5, 2, .965);
+        backdrop-filter: blur(9px);
+        padding: 22px;
+        overflow-y: auto;
+    }
+    .first-gig-tutorial-overlay.is-open { display: block; }
+    .first-gig-tutorial-window {
+        width: min(1180px, 100%);
+        margin: 0 auto;
+        background: #050a07;
+        border: 1px solid rgba(57,255,20,.46);
+        box-shadow: 0 0 0 1px #000, 0 24px 90px rgba(0,0,0,.75), inset 0 0 70px rgba(57,255,20,.025);
+        position: relative;
+        overflow: hidden;
+    }
+    .first-gig-tutorial-window::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: .16;
+        background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,.025) 3px 4px);
+    }
+    .first-gig-tutorial-head {
+        position: relative;
+        z-index: 1;
+        padding: 24px 26px 20px;
+        border-bottom: 1px solid rgba(57,255,20,.22);
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        align-items: flex-end;
+        background: linear-gradient(180deg, rgba(57,255,20,.055), rgba(0,0,0,0));
+    }
+    .first-gig-tutorial-kicker {
+        color: #39ff14;
+        font-size: .72rem;
+        letter-spacing: 3px;
+        margin-bottom: 7px;
+    }
+    .first-gig-tutorial-head h2 {
+        margin: 0;
+        font-size: clamp(1.35rem, 3vw, 2.25rem);
+        letter-spacing: 3px;
+        color: #f5fff7;
+        text-shadow: 0 0 18px rgba(57,255,20,.25);
+    }
+    .first-gig-tutorial-current {
+        text-align: right;
+        color: #91a998;
+        font-size: .78rem;
+        line-height: 1.7;
+    }
+    .first-gig-tutorial-current strong { color: #b9ffc3; }
+    .first-gig-tutorial-body {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
+        gap: 22px;
+        padding: 24px 26px;
+    }
+    .first-gig-demo,
+    .first-gig-guide {
+        min-width: 0;
+    }
+    .first-gig-section-label {
+        color: #657c6b;
+        font-size: .68rem;
+        letter-spacing: 2px;
+        margin-bottom: 9px;
+    }
+    .first-gig-demo-panel {
+        background: #030604;
+        border: 1px solid #17321e;
+        padding: 16px;
+        box-shadow: inset 0 0 35px rgba(57,255,20,.025);
+    }
+    .first-gig-demo-panel + .first-gig-demo-panel { margin-top: 12px; }
+    .first-gig-demo .track-info { margin-bottom: 12px; }
+    .first-gig-demo .bpm-matching { margin-bottom: 14px; }
+    .first-gig-demo .required-action-prompt { margin-bottom: 12px; }
+    .first-gig-demo .timing-track { margin-bottom: 12px; }
+    .first-gig-demo .action-controls { pointer-events: none; }
+    .first-gig-demo .dj-btn { opacity: 1; }
+    .first-gig-demo-note {
+        margin-top: 8px;
+        color: #708276;
+        font-size: .72rem;
+        line-height: 1.5;
+    }
+    .first-gig-demo-crowd {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+    .first-gig-demo-crowd label {
+        display: block;
+        color: #d8e9db;
+        margin-bottom: 6px;
+        font-size: .78rem;
+    }
+    .first-gig-demo-player {
+        border: 1px solid #17321e;
+        background: #020403;
+        padding: 13px 14px;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+    }
+    .first-gig-demo-player strong { color: #39ff14; }
+    .first-gig-demo-player span { color: #718278; font-size: .75rem; text-align: right; }
+    .first-gig-guide {
+        display: grid;
+        gap: 9px;
+        align-content: start;
+    }
+    .first-gig-guide-card {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 12px;
+        padding: 13px 14px;
+        background: rgba(7,15,9,.72);
+        border: 1px solid #17321e;
+    }
+    .first-gig-guide-num {
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(57,255,20,.45);
+        color: #39ff14;
+        font-size: .72rem;
+        font-weight: bold;
+    }
+    .first-gig-guide-card h3 {
+        margin: 0 0 4px;
+        color: #effff2;
+        font-size: .87rem;
+        letter-spacing: .7px;
+    }
+    .first-gig-guide-card p {
+        margin: 0;
+        color: #8fa296;
+        font-size: .76rem;
+        line-height: 1.55;
+    }
+    .first-gig-guide-card strong { color: #c5ffcd; }
+    .first-gig-tutorial-tip {
+        position: relative;
+        z-index: 1;
+        margin: 0 26px 22px;
+        padding: 12px 14px;
+        border-left: 3px solid #39ff14;
+        background: rgba(57,255,20,.045);
+        color: #91a998;
+        font-size: .78rem;
+        line-height: 1.55;
+    }
+    .first-gig-tutorial-footer {
+        position: relative;
+        z-index: 1;
+        border-top: 1px solid rgba(57,255,20,.22);
+        padding: 18px 26px 22px;
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        align-items: center;
+        background: #030604;
+    }
+    .first-gig-tutorial-footer span {
+        color: #617168;
+        font-size: .7rem;
+        letter-spacing: 1px;
+    }
+    .first-gig-start-btn {
+        border: 1px solid #39ff14;
+        background: #39ff14;
+        color: #001604;
+        padding: 13px 22px;
+        font: inherit;
+        font-weight: 900;
+        letter-spacing: 1px;
+        cursor: pointer;
+        text-transform: uppercase;
+        box-shadow: 0 0 24px rgba(57,255,20,.16);
+    }
+    .first-gig-start-btn:hover { filter: brightness(1.12); }
+    body.first-gig-tutorial-lock { overflow: hidden; }
+    @media (max-width: 850px) {
+        .first-gig-tutorial-overlay { padding: 10px; }
+        .first-gig-tutorial-body { grid-template-columns: 1fr; padding: 18px; }
+        .first-gig-tutorial-head { padding: 20px 18px 16px; align-items: flex-start; flex-direction: column; }
+        .first-gig-tutorial-current { text-align: left; }
+        .first-gig-tutorial-tip { margin: 0 18px 18px; }
+        .first-gig-tutorial-footer { padding: 16px 18px; flex-direction: column; align-items: stretch; }
+        .first-gig-start-btn { width: 100%; }
+    }
+    @media (max-width: 520px) {
+        .first-gig-demo-crowd { grid-template-columns: 1fr; }
+        .first-gig-demo-player { align-items: flex-start; flex-direction: column; }
+        .first-gig-demo-player span { text-align: left; }
+    }
+</style>
 </head>
 <body>
 
@@ -2424,6 +2641,114 @@
             <div class="instructions-footer">
                 <span>POSTĘP ZAPISUJE SIĘ W PAMIĘCI TEJ PRZEGLĄDARKI.</span>
                 <button class="instructions-enter" onclick="closeInstructions()">ROZUMIEM // WEJDŹ DO GRY</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- v3.9: TUTORIAL PIERWSZEGO SETA -->
+    <div id="first-gig-tutorial-overlay" class="first-gig-tutorial-overlay" role="dialog" aria-modal="true" aria-labelledby="first-gig-tutorial-title">
+        <div class="first-gig-tutorial-window">
+            <div class="first-gig-tutorial-head">
+                <div>
+                    <div class="first-gig-tutorial-kicker">// BOOTH TRAINING MODE</div>
+                    <h2 id="first-gig-tutorial-title">JAK ZAGRAĆ SET?</h2>
+                </div>
+                <div class="first-gig-tutorial-current">
+                    AKTUALNY GATUNEK: <strong id="first-gig-tutorial-genre">—</strong><br>
+                    ZAKRES GATUNKU: <strong id="first-gig-tutorial-range">— BPM</strong>
+                </div>
+            </div>
+
+            <div class="first-gig-tutorial-body">
+                <div class="first-gig-demo">
+                    <div class="first-gig-section-label">// TAK WYGLĄDA PANEL, KTÓRYM STERUJESZ</div>
+                    <div class="first-gig-demo-panel">
+                        <div class="track-info">
+                            <span style="color: var(--neon-cyan); font-weight:bold;">TRACK: 1 / 5</span>
+                            <span style="color: var(--neon-pink); font-weight:bold;">Target: 140 BPM</span>
+                        </div>
+                        <div class="bpm-matching">
+                            <label>Dopasuj Pitch (BPM):</label>
+                            <input type="range" class="bpm-slider" id="first-gig-demo-slider" min="125" max="155" value="135">
+                            <span id="first-gig-demo-bpm" style="color:var(--neon-cyan);font-weight:bold;">135 BPM</span>
+                        </div>
+                        <div class="required-action-prompt">WYMAGANA AKCJA: 🔥 ODPAL DROP</div>
+                        <div class="timing-track">
+                            <div class="target-zone" style="left:70%;width:22%;"></div>
+                            <div class="perfect-line" style="left:81%;"></div>
+                            <div class="beat-marker" style="left:77%;"></div>
+                        </div>
+                        <div class="action-controls">
+                            <button type="button" class="dj-btn highlighted-action">🔥 Odpal DROP</button>
+                            <button type="button" class="dj-btn">🎛️ Zrób Przejście</button>
+                        </div>
+                        <div class="first-gig-demo-note">Suwak powyżej możesz poruszyć — to tylko demonstracja i nie wpływa na prawdziwy set.</div>
+                    </div>
+
+                    <div class="first-gig-demo-panel">
+                        <div class="first-gig-demo-crowd">
+                            <div>
+                                <label>Energia tłumu:</label>
+                                <div class="progress-bar-container"><div class="progress-fill" style="width:68%;"></div></div>
+                            </div>
+                            <div>
+                                <label>Zaufanie publiki:</label>
+                                <div class="progress-bar-container"><div class="progress-fill" style="width:54%;background:var(--neon-cyan);"></div></div>
+                            </div>
+                        </div>
+                        <div style="font-size:.76rem;color:#91a998;">ENERGIA = czy parkiet nadal żyje · ZAUFANIE = jak mocno publika jest po Twojej stronie</div>
+                    </div>
+
+                    <div class="first-gig-demo-panel first-gig-demo-player">
+                        <div>NOW PLAYING // <strong id="first-gig-demo-genre">GATUNEK</strong></div>
+                        <span>SoundCloud dobiera losowy utwór z puli danego gatunku.</span>
+                    </div>
+                </div>
+
+                <div class="first-gig-guide">
+                    <div class="first-gig-section-label">// ZASADY KROK PO KROKU</div>
+                    <section class="first-gig-guide-card">
+                        <div class="first-gig-guide-num">01</div>
+                        <div><h3>SPRAWDŹ TARGET BPM</h3><p>Po prawej stronie widzisz <strong>Target</strong>. To tempo, do którego musisz dopasować swój suwak Pitch. Każdy gatunek ma własny zakres BPM.</p></div>
+                    </section>
+                    <section class="first-gig-guide-card">
+                        <div class="first-gig-guide-num">02</div>
+                        <div><h3>DOPASUJ SUWAK BPM</h3><p>Przesuń <strong>Pitch (BPM)</strong> możliwie blisko Targetu. Różnica 0–1 BPM daje najlepszą szansę na PERFECT. Różnica do 3 BPM nadal może dać dobry miks.</p></div>
+                    </section>
+                    <section class="first-gig-guide-card">
+                        <div class="first-gig-guide-num">03</div>
+                        <div><h3>WYKONAJ WŁAŚCIWĄ AKCJĘ</h3><p>Panel pokaże <strong>DROP</strong> albo <strong>PRZEJŚCIE</strong>. Kliknięcie złego przycisku natychmiast karze energię tłumu, nawet jeśli timing i BPM były dobre.</p></div>
+                    </section>
+                    <section class="first-gig-guide-card">
+                        <div class="first-gig-guide-num">04</div>
+                        <div><h3>TRAF W STREFĘ TIMINGU</h3><p>Biały marker porusza się po pasku. Kliknij wymaganą akcję, gdy marker znajduje się w <strong>zaznaczonej strefie</strong>. Cienka linia w środku oznacza idealny punkt.</p></div>
+                    </section>
+                    <section class="first-gig-guide-card">
+                        <div class="first-gig-guide-num">05</div>
+                        <div><h3>PERFECT = 3 RZECZY NARAZ</h3><p><strong>Poprawna akcja + BPM maks. 1 od Targetu + trafienie w strefę</strong> daje najlepszy rezultat: rośnie energia i zaufanie publiki.</p></div>
+                    </section>
+                    <section class="first-gig-guide-card">
+                        <div class="first-gig-guide-num">06</div>
+                        <div><h3>PILNUJ PUBLIKI</h3><p><strong>Energia</strong> jest najważniejsza — gdy spadnie do 0, set kończy się porażką. Zaufanie pomaga budować stabilniejszą relację z publiką i reaguje na Twoje decyzje.</p></div>
+                    </section>
+                    <section class="first-gig-guide-card">
+                        <div class="first-gig-guide-num">07</div>
+                        <div><h3>MUZYKA SOUNDCLOUD</h3><p>Do gatunku seta dobierany jest losowy utwór z odpowiedniej puli. Jeśli przeglądarka zablokuje autoplay, kliknij <strong>Play</strong> bezpośrednio w odtwarzaczu pod panelem seta.</p></div>
+                    </section>
+                    <section class="first-gig-guide-card">
+                        <div class="first-gig-guide-num">08</div>
+                        <div><h3>WŁASNE EVENTY = KRYZYSY</h3><p>Podczas organizowanych przez Ciebie imprez mogą wyskakiwać sytuacje kryzysowe. Wtedy set zostaje zatrzymany, a Ty musisz szybko wybrać decyzję.</p></div>
+                    </section>
+                </div>
+            </div>
+
+            <div class="first-gig-tutorial-tip"><strong style="color:#c5ffcd;">WAŻNE:</strong> tutorial zatrzymał prawdziwy set. Marker i muzyka wystartują dopiero po kliknięciu przycisku poniżej, więc niczego nie przegapisz podczas czytania.</div>
+            <div class="first-gig-tutorial-footer">
+                <span>TA INSTRUKCJA POJAWIA SIĘ AUTOMATYCZNIE TYLKO PRZY PIERWSZYM SECIE.</span>
+                <button type="button" class="first-gig-start-btn" onclick="closeFirstGigTutorialAndStart()">ROZUMIEM // ZACZYNAM SET</button>
             </div>
         </div>
     </div>
@@ -4650,6 +4975,62 @@
         saveGameState(); setupDeckView(currentGig.name,currentGig.targetBpm,currentGig.totalTracks);
     };
 
+    const FIRST_GIG_TUTORIAL_KEY = 'otchlan_first_gig_tutorial_seen_v1';
+    let firstGigTutorialOpen = false;
+    let firstGigTutorialGenre = null;
+
+    function shouldShowFirstGigTutorial(){
+        try { return localStorage.getItem(FIRST_GIG_TUTORIAL_KEY) !== '1'; }
+        catch(e){ return true; }
+    }
+
+    function openFirstGigTutorial(genre){
+        const overlay=document.getElementById('first-gig-tutorial-overlay');
+        if(!overlay) return false;
+        firstGigTutorialGenre=genre || currentGig?.genre || null;
+        firstGigTutorialOpen=true;
+        if(beatInterval){ clearInterval(beatInterval); beatInterval=null; }
+        if(driftInterval){ clearInterval(driftInterval); driftInterval=null; }
+        stopGigMusic();
+
+        const range=firstGigTutorialGenre ? GENRE_BPM_RANGES[firstGigTutorialGenre] : null;
+        const name=firstGigTutorialGenre ? (V2_GENRE_NAMES[firstGigTutorialGenre] || firstGigTutorialGenre) : '—';
+        const genreEl=document.getElementById('first-gig-tutorial-genre');
+        const rangeEl=document.getElementById('first-gig-tutorial-range');
+        const demoGenre=document.getElementById('first-gig-demo-genre');
+        if(genreEl) genreEl.textContent=name;
+        if(rangeEl) rangeEl.textContent=range ? `${range.min}–${range.max} BPM` : '— BPM';
+        if(demoGenre) demoGenre.textContent=name.toUpperCase();
+
+        overlay.classList.add('is-open');
+        document.body.classList.add('first-gig-tutorial-lock');
+        return true;
+    }
+
+    function closeFirstGigTutorialAndStart(){
+        const overlay=document.getElementById('first-gig-tutorial-overlay');
+        if(overlay) overlay.classList.remove('is-open');
+        document.body.classList.remove('first-gig-tutorial-lock');
+        firstGigTutorialOpen=false;
+        try { localStorage.setItem(FIRST_GIG_TUTORIAL_KEY,'1'); } catch(e){}
+
+        // Start faktycznej rozgrywki dopiero po przeczytaniu tutorialu.
+        startRhythmEngine();
+        startBpmDriftEngine();
+        const genre=currentGig?.genre || firstGigTutorialGenre;
+        if(genre) startGigMusic(genre);
+        firstGigTutorialGenre=null;
+    }
+    window.closeFirstGigTutorialAndStart=closeFirstGigTutorialAndStart;
+
+    const firstGigDemoSlider=document.getElementById('first-gig-demo-slider');
+    if(firstGigDemoSlider){
+        firstGigDemoSlider.addEventListener('input',()=>{
+            const v=document.getElementById('first-gig-demo-bpm');
+            if(v) v.textContent=`${firstGigDemoSlider.value} BPM`;
+        });
+    }
+
     ORIG.setupDeckView && (setupDeckView = function(title,target,total){
         ORIG.setupDeckView(title,target,total);
         updateSyncButton();
@@ -4657,7 +5038,11 @@
             const ctx=v2PendingContext || {type:isHostedEvent?'event':'club',locId:'mixed',genre:currentGig.genre};
             currentGig.v2Context=ctx;
             initSession(ctx);
-            if(ctx.genre) startGigMusic(ctx.genre);
+            if(shouldShowFirstGigTutorial()){
+                openFirstGigTutorial(ctx.genre);
+            } else if(ctx.genre){
+                startGigMusic(ctx.genre);
+            }
             v2PendingContext=null;
         }
     });

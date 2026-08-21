@@ -2953,6 +2953,39 @@
     .settings-actions{flex-direction:column;}
     .settings-actions button{width:100%;flex:auto;}
 }
+
+/* v3.14 — FIX RAPORTU SETA NA TELEFONIE */
+.v2-report-box{position:relative;}
+.v2-report-close-x{
+    position:absolute;top:10px;right:10px;z-index:3;
+    width:38px;height:38px;padding:0;display:flex;align-items:center;justify-content:center;
+    background:#050a07;border:1px solid #526155;color:#fff;font-size:1.45rem;line-height:1;cursor:pointer;
+}
+@media(max-width:850px){
+    .v2-report-overlay{
+        align-items:flex-start!important;justify-content:center!important;
+        overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;
+        padding:6px!important;box-sizing:border-box!important;
+    }
+    .v2-report-box{
+        width:100%!important;max-width:720px!important;
+        max-height:calc(100dvh - 12px)!important;
+        overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;
+        padding:18px 14px 10px!important;box-sizing:border-box!important;
+        margin:auto 0!important;
+    }
+    .v2-report-box > .dj-btn.btn-block{
+        position:sticky!important;bottom:0!important;z-index:4!important;
+        margin-top:16px!important;padding:14px 12px!important;
+        background:#071109!important;box-shadow:0 -10px 18px rgba(5,10,7,.96)!important;
+    }
+}
+@media(max-width:560px){
+    .v2-report-grid{grid-template-columns:1fr 1fr!important;}
+    .v2-report-grid div{padding:9px!important;}
+    .v2-report-grid strong{font-size:1.15rem!important;}
+    .v2-report-box h2{padding-right:44px!important;font-size:1.25rem!important;}
+}
 </style>
 
 </head>
@@ -5431,7 +5464,7 @@
             const weekHtml=cal.weekChanged ? `<br><strong>NOWY TYDZIEŃ ${cal.newWeek}</strong> — propozycje bookingów zostały odświeżone.` : '';
             calendarHtml=`<div class="v2-info-box">📅 KALENDARZ: dzień <strong>${cal.oldDay}</strong> → <strong>${cal.newDay}</strong>${weekHtml}${missedHtml}</div>`;
         }
-        b.innerHTML=`<div class="v2-section-title">RAPORT SETA</div><h2>${report.success?'✅ SET DOWIEZIONY':'❌ SET PRZERWANY'}</h2><h3>${esc(report.title)}</h3><div class="v2-report-grid"><div>PERFECT<strong>${report.perfects}</strong></div><div>GOOD<strong>${report.goods}</strong></div><div>BŁĘDY<strong>${report.misses+report.wrong}</strong></div><div>AVG BPM ERROR<strong>${report.avgBpm.toFixed(1)}</strong></div><div>ENERGIA<strong>${report.energy}%</strong></div><div>TRUST<strong>${report.trust}%</strong></div></div><div class="v2-info-box">Wypłata: <strong>${report.payout>=0?'+':''}${report.payout} PLN</strong> · EXP +${report.exp} · reputacja miasta ${report.cityRep>=0?'+':''}${report.cityRep}<br>Reputacje v2: UG ${report.repGains.underground>=0?'+':''}${report.repGains.underground}, TECH +${report.repGains.technical}, PROMO +${report.repGains.promoter}, CROWD +${report.repGains.crowd}</div>${calendarHtml}<button class="dj-btn btn-block" onclick="closeReportV2()">WRÓĆ DO KARIERY</button>`;
+        b.innerHTML=`<button type="button" class="v2-report-close-x" onclick="closeReportV2()" aria-label="Zamknij raport seta">×</button><div class="v2-section-title">RAPORT SETA</div><h2>${report.success?'✅ SET DOWIEZIONY':'❌ SET PRZERWANY'}</h2><h3>${esc(report.title)}</h3><div class="v2-report-grid"><div>PERFECT<strong>${report.perfects}</strong></div><div>GOOD<strong>${report.goods}</strong></div><div>BŁĘDY<strong>${report.misses+report.wrong}</strong></div><div>AVG BPM ERROR<strong>${report.avgBpm.toFixed(1)}</strong></div><div>ENERGIA<strong>${report.energy}%</strong></div><div>TRUST<strong>${report.trust}%</strong></div></div><div class="v2-info-box">Wypłata: <strong>${report.payout>=0?'+':''}${report.payout} PLN</strong> · EXP +${report.exp} · reputacja miasta ${report.cityRep>=0?'+':''}${report.cityRep}<br>Reputacje v2: UG ${report.repGains.underground>=0?'+':''}${report.repGains.underground}, TECH +${report.repGains.technical}, PROMO +${report.repGains.promoter}, CROWD +${report.repGains.crowd}</div>${calendarHtml}<button class="dj-btn btn-block" onclick="closeReportV2()">WRÓĆ DO KARIERY</button>`;
         o.style.display='flex';
     }
     function closeReport(){ document.getElementById('v2-report-overlay').style.display='none'; }

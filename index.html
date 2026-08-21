@@ -2322,6 +2322,34 @@
         cursor:not-allowed;
         filter:saturate(.35);
     }
+
+
+        /* v3.8 — pełnoszeroki odtwarzacz SoundCloud podczas seta */
+        .sc-gig-player {
+            display: none;
+            width: 100%;
+            margin: 14px 0 12px;
+            background: #020503;
+            border: 1px solid #1e5f2a;
+            box-shadow: inset 0 0 0 1px rgba(57,255,20,.03);
+            overflow: hidden;
+        }
+        .sc-gig-player.active { display: block; }
+        .sc-gig-player-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 9px 12px;
+            border-bottom: 1px solid #183e20;
+            background: #061009;
+            color: var(--muted-text);
+            font-size: .78rem;
+            letter-spacing: 1px;
+        }
+        .sc-gig-player-head strong { color: var(--neon-cyan); }
+        .sc-gig-player iframe { width: 100%; height: 300px; display: block; border: 0; }
+        @media (max-width: 700px){ .sc-gig-player iframe { height: 220px; } }
 </style>
 
 </head>
@@ -2690,10 +2718,9 @@
                 <div class="form-group">
                     <label>Główny nurt muzyczny nocy (BASS MUSIC):</label>
                     <select id="event-genre" onchange="updateEventEstimates()">
-                        <option value="dnb">Drum and Bass (170-176 BPM)</option>
-                        <option value="neurofunk">Neurofunk (172-178 BPM)</option>
-                        <option value="ukg">UK Garage (130-134 BPM)</option>
-                        <option value="dubstep">Deep Dubstep (140-142 BPM)</option>
+                        <option value="ukg">UK Garage (128-140 BPM)</option>
+                        <option value="dubstep">Dubstep (130-150 BPM)</option>
+                        <option value="dnb">Drum &amp; Bass (165-185 BPM)</option>
                     </select>
                 </div>
 
@@ -2800,10 +2827,9 @@
         };
 
         const GENRE_BPM_RANGES = {
-            dnb: { name: "Drum and Bass", min: 170, max: 176 }, 
-            neurofunk: { name: "Neurofunk", min: 172, max: 178 },
-            ukg: { name: "UK Garage", min: 130, max: 134 }, 
-            dubstep: { name: "Deep Dubstep", min: 140, max: 142 }
+            ukg: { name: "UK Garage", min: 128, max: 140 },
+            dubstep: { name: "Dubstep", min: 130, max: 150 },
+            dnb: { name: "Drum & Bass", min: 165, max: 185 }
         };
 
         const CRISIS_EVENTS = [
@@ -3682,15 +3708,59 @@
     'use strict';
 
     const V2_GENRE_NAMES = {
-        dnb: 'Drum & Bass', neurofunk: 'Neurofunk', ukg: 'UK Garage', dubstep: 'Deep Dubstep', jungle: 'Jungle', halftime: 'Halftime'
+        ukg: 'UK Garage',
+        dubstep: 'Dubstep',
+        dnb: 'Drum & Bass'
     };
 
+
+    // v3.8 — muzyka SoundCloud zależna od gatunku seta.
+    // Jeden utwór losowany jest na cały set; unikamy natychmiastowego powtórzenia.
+    const SOUNDCLOUD_TRACKS = {
+        ukg: [
+            { id:'2080950090', artist:'Doman & Alegria', title:'Punk MCs' },
+            { id:'2059351892', artist:'Doman', title:'Dirty' },
+            { id:'1937619440', artist:'theo_ther', title:'Trust' }
+        ],
+        dubstep: [
+            { id:'1498068886', artist:'OTCHŁAŃ', title:'Stay Away' },
+            { id:'1520967283', artist:'Doman', title:'Helheim' },
+            { id:'1775791356', artist:'ANTI, theo_ther', title:'Parentalia' },
+            { id:'1520968174', artist:'Doman', title:'Mimir' },
+            { id:'1615808136', artist:'theo_ther', title:'Simurg' },
+            { id:'2187987559', artist:'ANTI & theo_ther', title:'We Fall' }
+        ],
+        dnb: [
+            { id:'1520969812', artist:'Doman', title:'Sleipnir' },
+            { id:'1746129198', artist:'Doman', title:'Cauldron Lake' },
+            { id:'1487163499', artist:'theo_ther', title:'Bleed' },
+            { id:'1600853460', artist:'theo_ther, Doman', title:'Brooding' }
+        ]
+    };
+    const GAME_GENRES = Object.freeze(['ukg','dubstep','dnb']);
+    const lastSoundCloudTrackByGenre = { ukg:null, dubstep:null, dnb:null };
+
+    function soundCloudEmbedSrc(track){
+        const encodedTrack = `https%3A//api.soundcloud.com/tracks/soundcloud%253Atracks%253A${track.id}`;
+        return `https://w.soundcloud.com/player/?url=${encodedTrack}&color=%2339ff14&auto_play=true&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true`;
+    }
+
+    function pickSoundCloudTrack(genre){
+        const pool = SOUNDCLOUD_TRACKS[genre] || [];
+        if (!pool.length) return null;
+        const previous = lastSoundCloudTrackByGenre[genre];
+        const choices = pool.length > 1 ? pool.filter(t => t.id !== previous) : pool;
+        const track = choices[rand(0, choices.length - 1)];
+        lastSoundCloudTrackByGenre[genre] = track.id;
+        return track;
+    }
+
     const V2_CROWD_PROFILES = {
-        lazarz: { name:'BASS HEADS / PIWNICA', startEnergy:2, startTrust:4, tastes:{dubstep:1.30, ukg:1.15, halftime:1.20, jungle:1.00, dnb:0.90, neurofunk:0.78} },
-        domtechnika: { name:'DNB CREW / TECHNICZNI', startEnergy:4, startTrust:0, tastes:{dnb:1.28, neurofunk:1.22, jungle:1.12, ukg:0.92, dubstep:0.88, halftime:0.80} },
-        schron: { name:'UNDERGROUND / OTWARCI', startEnergy:1, startTrust:6, tastes:{dubstep:1.25, halftime:1.20, ukg:1.12, jungle:1.10, dnb:1.00, neurofunk:0.92} },
-        tama: { name:'DUŻY PARKIET / PEAK TIME', startEnergy:8, startTrust:-4, tastes:{dnb:1.22, neurofunk:1.26, jungle:1.10, ukg:0.95, dubstep:0.90, halftime:0.78} },
-        mixed: { name:'MIESZANA PUBLICZNOŚĆ', startEnergy:0, startTrust:0, tastes:{dnb:1, neurofunk:1, ukg:1, dubstep:1, jungle:1, halftime:1} }
+        lazarz: { name:'BASS HEADS / PIWNICA', startEnergy:2, startTrust:4, tastes:{dubstep:1.30, ukg:1.15, dnb:0.90} },
+        domtechnika: { name:'DNB CREW / TECHNICZNI', startEnergy:4, startTrust:0, tastes:{dnb:1.28, ukg:0.92, dubstep:0.88} },
+        schron: { name:'UNDERGROUND / OTWARCI', startEnergy:1, startTrust:6, tastes:{dubstep:1.25, ukg:1.12, dnb:1.00} },
+        tama: { name:'DUŻY PARKIET / PEAK TIME', startEnergy:8, startTrust:-4, tastes:{dnb:1.24, ukg:0.98, dubstep:0.92} },
+        mixed: { name:'MIESZANA PUBLICZNOŚĆ', startEnergy:0, startTrust:0, tastes:{dnb:1, ukg:1, dubstep:1} }
     };
 
     const V2_PERKS = {
@@ -3729,7 +3799,7 @@
 
     const V2_CONTACTS = {
         marta: { name:'theo_ther // PROMOTOR / DJ', role:'bookingi, scena i kontakty', req:() => player.level >= 2, stat:'selection', rep:'promoter' },
-        k3rzc: { name:'DOMAN // SELEKTOR', role:'selekcja, jungle & DnB, underground', req:() => v2().reputations.underground >= 12, stat:'selection', rep:'underground' },
+        k3rzc: { name:'DOMAN // SELEKTOR', role:'selekcja, UKG / Dubstep / DnB, underground', req:() => v2().reputations.underground >= 12, stat:'selection', rep:'underground' },
         molly: { name:'STACHU // PRODUKCJA / VJ', role:'visuale i produkcja wydarzeń', req:() => v2().reputations.promoter >= 8, stat:'control', rep:'promoter' },
         hus: { name:'HUS // VENUE CONTACT', role:'lokale, stawki i backstage', req:() => player.rep >= 600, stat:'control', rep:'promoter' }
     };
@@ -3837,7 +3907,8 @@
             lastPerkLevel:player.level || 1,
             reputations:{ underground:0, technical:0, promoter:0, crowd:0 },
             perks:{},
-            trends:{ dnb:1.00, neurofunk:0.95, ukg:1.08, dubstep:1.12, jungle:1.02, halftime:0.92 },
+            trends:{ ukg:1.00, dubstep:1.00, dnb:1.00 },
+            lastClubGenreByLocation:{},
             contacts:{},
             quests,
             bookings:[],
@@ -3861,7 +3932,10 @@
         for (const k of Object.keys(d)) if (s[k] === undefined) s[k] = d[k];
         s.reputations = Object.assign({}, d.reputations, s.reputations || {});
         s.perks = Object.assign({}, s.perks || {});
-        s.trends = Object.assign({}, d.trends, s.trends || {});
+        const previousTrends = Object.assign({}, s.trends || {});
+        s.trends = {};
+        GAME_GENRES.forEach(g => s.trends[g] = Number.isFinite(+previousTrends[g]) ? +previousTrends[g] : d.trends[g]);
+        s.lastClubGenreByLocation = Object.assign({}, s.lastClubGenreByLocation || {});
         if (!s.perksMergedToTraits) {
             player.statPoints = (player.statPoints || 0) + (s.perkPoints || 0);
             s.perkPoints = 0;
@@ -3946,7 +4020,7 @@
     }
 
     function randomizeTrends(){
-        const genres = Object.keys(V2_GENRE_NAMES);
+        const genres = [...GAME_GENRES];
         genres.forEach(g => v2().trends[g] = +(0.90 + Math.random()*0.20).toFixed(2));
         const hot = genres[rand(0,genres.length-1)];
         let cold = genres[rand(0,genres.length-1)];
@@ -4062,19 +4136,23 @@
         }
         const loc = LOCATIONS[b.locId];
         if (!loc || player.rep < loc.reqRep) return;
+        const genre=pickGenreForLocation(b.locId);
+        const range=GENRE_BPM_RANGES[genre];
         const networkBonus = contactRelation('marta') >= 2 ? 1.10 : 1;
         currentGig = {
-            name:`${loc.name} // ${b.title}`,
-            targetBpm:rand(loc.bpmMin,loc.bpmMax),
+            name:`${loc.name} // ${b.title} // ${V2_GENRE_NAMES[genre]}`,
+            targetBpm:rand(range.min,range.max),
             basePay:Math.floor(loc.basePay * b.payMult * networkBonus),
             attendance:Math.floor(loc.basePpl * (0.95 + Math.random()*0.25)),
             totalTracks:loc.totalTracks,
             rewardExp:loc.rewardExp,
             rewardRep:loc.rewardRep + b.repBonus,
-            v2BookingId:b.id
+            v2BookingId:b.id,
+            genre
         };
         isHostedEvent=false;
-        v2PendingContext={type:'booking',locId:b.locId,bookingId:b.id};
+        v2PendingContext={type:'booking',locId:b.locId,bookingId:b.id,genre};
+        saveGameState();
         setupDeckView(currentGig.name,currentGig.targetBpm,currentGig.totalTracks);
     }
 
@@ -4195,8 +4273,7 @@
 
     function currentBpmRange(){
         const ctx = (currentGig && currentGig.v2Context) || v2PendingContext || null;
-        if (ctx && ctx.type === 'event' && ctx.genre && GENRE_BPM_RANGES[ctx.genre]) return GENRE_BPM_RANGES[ctx.genre];
-        if (ctx && ctx.locId && LOCATIONS[ctx.locId]) return {min:LOCATIONS[ctx.locId].bpmMin,max:LOCATIONS[ctx.locId].bpmMax};
+        if (ctx && ctx.genre && GENRE_BPM_RANGES[ctx.genre]) return GENRE_BPM_RANGES[ctx.genre];
         const base = currentGig && currentGig.targetBpm ? currentGig.targetBpm : 140;
         return {min:base,max:base};
     }
@@ -4219,7 +4296,8 @@
         if(title) title.innerText=`TRACK ${currentTrackIndex} / ${totalTracksInSet}`;
         const panel=document.getElementById('v2-deck-meta');
         if(panel){
-            panel.innerHTML=`<div>ETAP SETA: <strong>${currentTrackIndex}/${totalTracksInSet}</strong> · TARGET <strong>${targetBpmValue} BPM</strong></div>
+            const genre = v2Session.context?.genre;
+            panel.innerHTML=`<div>ETAP SETA: <strong>${currentTrackIndex}/${totalTracksInSet}</strong> · TARGET <strong>${targetBpmValue} BPM</strong>${genre?` · GATUNEK <strong>${esc(V2_GENRE_NAMES[genre]||genre)}</strong>`:''}</div>
                 <div>PUBLICZNOŚĆ: <strong>${esc(profile.name)}</strong></div>`;
         }
     }
@@ -4264,7 +4342,51 @@
         });
         const header=document.querySelector('header');
         const vHud=document.createElement('div'); vHud.id='v2-hud'; header.appendChild(vHud);
-        augmentDeck(); augmentEventPanel(); createReportModal();
+        augmentDeck(); augmentSoundCloudPlayer(); augmentEventPanel(); createReportModal();
+    }
+
+
+    function augmentSoundCloudPlayer(){
+        const deck=document.getElementById('view-djdeck');
+        const grid=deck && deck.querySelector('.gig-grid');
+        const logs=document.getElementById('dj-logs');
+        if(!deck || !grid || !logs || document.getElementById('sc-gig-player')) return;
+        const player=document.createElement('div');
+        player.id='sc-gig-player';
+        player.className='sc-gig-player';
+        player.innerHTML='<div class="sc-gig-player-head"><span>NOW PLAYING // <strong id="sc-gig-genre">—</strong></span><span id="sc-gig-track">—</span></div><div id="sc-gig-embed"></div>';
+        deck.insertBefore(player, logs);
+    }
+
+    function startGigMusic(genre){
+        augmentSoundCloudPlayer();
+        const player=document.getElementById('sc-gig-player');
+        const embed=document.getElementById('sc-gig-embed');
+        if(!player || !embed || !SOUNDCLOUD_TRACKS[genre]) return;
+        const track=pickSoundCloudTrack(genre);
+        if(!track) return;
+        const g=document.getElementById('sc-gig-genre');
+        const t=document.getElementById('sc-gig-track');
+        if(g) g.textContent=V2_GENRE_NAMES[genre] || genre;
+        if(t) t.textContent=`${track.artist} — ${track.title}`;
+        embed.innerHTML=`<iframe scrolling="no" frameborder="no" allow="autoplay; encrypted-media" src="${soundCloudEmbedSrc(track)}" title="SoundCloud: ${esc(track.artist)} — ${esc(track.title)}"></iframe>`;
+        player.classList.add('active');
+    }
+
+    function stopGigMusic(){
+        const player=document.getElementById('sc-gig-player');
+        const embed=document.getElementById('sc-gig-embed');
+        if(embed) embed.innerHTML='';
+        if(player) player.classList.remove('active');
+    }
+
+    function pickGenreForLocation(locId){
+        const state=v2();
+        const previous=state.lastClubGenreByLocation?.[locId] || null;
+        const choices=GAME_GENRES.filter(g=>g!==previous);
+        const genre=choices[rand(0,choices.length-1)];
+        state.lastClubGenreByLocation[locId]=genre;
+        return genre;
     }
 
     function augmentDeck(){
@@ -4275,11 +4397,11 @@
 
     function augmentEventPanel(){
         const panel=document.getElementById('event-unlocked-box'); if(!panel || document.getElementById('v2-event-options')) return;
-        if(!GENRE_BPM_RANGES.jungle) GENRE_BPM_RANGES.jungle={name:'Jungle',min:165,max:174};
-        if(!GENRE_BPM_RANGES.halftime) GENRE_BPM_RANGES.halftime={name:'Halftime',min:85,max:110};
         const genre=document.getElementById('event-genre');
-        if(genre && !genre.querySelector('option[value="jungle"]')){
-            genre.insertAdjacentHTML('beforeend','<option value="jungle">Jungle (165-174 BPM)</option><option value="halftime">Halftime (85-110 BPM)</option>');
+        if(genre){
+            const selected = GAME_GENRES.includes(genre.value) ? genre.value : 'ukg';
+            genre.innerHTML = '<option value="ukg">UK Garage (128-140 BPM)</option><option value="dubstep">Dubstep (130-150 BPM)</option><option value="dnb">Drum &amp; Bass (165-185 BPM)</option>';
+            genre.value = selected;
         }
         const box=document.createElement('div'); box.id='v2-event-options'; box.innerHTML=`
             <div id="v2-event-trends"></div>
@@ -4517,7 +4639,7 @@
         const attendance=rand(f.min,f.max), revenue=attendance*f.sel.ticket;
         let exp=400, rep=200; if(f.locId==='schron'){exp=700;rep=400;} else if(f.locId==='tama'){exp=1000;rep=600;}
         rep+=f.lineup.prestige;
-        currentGig={name:`Własny Event: Otchłań // ${range.name.toUpperCase()}`,targetBpm:rand(range.min,range.max),basePay:revenue,attendance,totalTracks:originalLoc.totalTracks+2,rewardExp:exp,rewardRep:rep,v2Event:{...f,upfrontCost:f.totalCost}};
+        currentGig={name:`Własny Event: Otchłań // ${range.name.toUpperCase()}`,targetBpm:rand(range.min,range.max),basePay:revenue,attendance,totalTracks:originalLoc.totalTracks+2,rewardExp:exp,rewardRep:rep,genre:f.genre,v2Event:{...f,upfrontCost:f.totalCost}};
         isHostedEvent=true; v2PendingContext={type:'event',locId:f.locId,genre:f.genre,event:f};
 
         // Trend wykorzystany przez bieżący event jest zapisany w `f`.
@@ -4532,17 +4654,33 @@
         ORIG.setupDeckView(title,target,total);
         updateSyncButton();
         if(currentGig){
-            const ctx=v2PendingContext || {type:isHostedEvent?'event':'club',locId:'mixed'};
+            const ctx=v2PendingContext || {type:isHostedEvent?'event':'club',locId:'mixed',genre:currentGig.genre};
             currentGig.v2Context=ctx;
             initSession(ctx);
+            if(ctx.genre) startGigMusic(ctx.genre);
             v2PendingContext=null;
         }
     });
 
     startGig = function(locId){
-        v2PendingContext={type:'club',locId};
-        ORIG.startGig(locId);
-        if(currentGig===null) v2PendingContext=null;
+        const loc=LOCATIONS[locId];
+        if(!loc || player.rep < loc.reqRep) return;
+        const genre=pickGenreForLocation(locId);
+        const range=GENRE_BPM_RANGES[genre];
+        currentGig={
+            name:`${loc.name} // ${V2_GENRE_NAMES[genre]}`,
+            targetBpm:rand(range.min,range.max),
+            basePay:loc.basePay,
+            attendance:Math.floor(loc.basePpl*(0.9+Math.random()*0.2)),
+            totalTracks:loc.totalTracks,
+            rewardExp:loc.rewardExp,
+            rewardRep:loc.rewardRep,
+            genre
+        };
+        isHostedEvent=false;
+        v2PendingContext={type:'club',locId,genre};
+        saveGameState();
+        setupDeckView(currentGig.name,currentGig.targetBpm,currentGig.totalTracks);
     };
 
     triggerCrisisQuestion = function(){
@@ -4596,6 +4734,7 @@
     finishGig = function(success){
         if(!currentGig)return;
         clearInterval(beatInterval);clearInterval(driftInterval);clearInterval(crisisTimerInterval);if(crisisStartTimeout){clearTimeout(crisisStartTimeout);crisisStartTimeout=null;}
+        stopGigMusic();
         isCrisisActive=false;document.getElementById('crisis-overlay').style.display='none';
         const gigSnapshot=currentGig, session=v2Session||{perfects:0,goods:0,misses:0,wrong:0,actions:0,bpmDiffSum:0,maxEnergy:crowdEnergy,trackResponses:[]};
         let payout=0, cityRep=0, expGain=0;
@@ -4638,6 +4777,7 @@
     };
 
     abortGig = function(){
+        stopGigMusic();
         const hadGig=currentGig!==null;
         const bId=currentGig&&currentGig.v2BookingId;
         ORIG.abortGig();

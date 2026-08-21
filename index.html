@@ -2860,8 +2860,157 @@
 }
 </style>
 
+
+<style id="device-choice-v312">
+/* v3.12 — explicit device chooser */
+.device-choice-overlay{
+    display:none; position:fixed; inset:0; z-index:16000;
+    background:radial-gradient(circle at 50% 18%,rgba(57,255,20,.10),transparent 32%),rgba(0,4,2,.975);
+    backdrop-filter:blur(9px); padding:18px; overflow:auto;
+    align-items:center; justify-content:center;
+}
+.device-choice-overlay.is-open{display:flex;}
+.device-choice-window{
+    width:min(760px,100%); border:1px solid rgba(57,255,20,.48); background:#040806;
+    box-shadow:0 24px 90px rgba(0,0,0,.8),inset 0 0 55px rgba(57,255,20,.025); padding:28px;
+}
+.device-choice-kicker{color:#39ff14;font-size:.72rem;letter-spacing:3px;margin-bottom:8px;}
+.device-choice-window h2{margin:0;color:#f4fff6;letter-spacing:3px;font-size:clamp(1.45rem,4vw,2.45rem);}
+.device-choice-copy{margin:12px 0 22px;color:#819288;line-height:1.6;font-size:.86rem;}
+.device-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.device-choice-btn{
+    min-height:170px;border:1px solid #245b2e;background:#071009;color:#eaffed;cursor:pointer;
+    padding:22px 18px;text-align:left;font:inherit;transition:.15s ease;position:relative;overflow:hidden;
+}
+.device-choice-btn:hover,.device-choice-btn:focus-visible{border-color:#39ff14;background:#0a160d;box-shadow:inset 0 0 25px rgba(57,255,20,.04);}
+.device-choice-icon{font-size:2.1rem;display:block;margin-bottom:14px;}
+.device-choice-title{display:block;color:#bfffc7;font-weight:900;letter-spacing:1.5px;font-size:1rem;margin-bottom:8px;}
+.device-choice-desc{display:block;color:#74857a;font-size:.75rem;line-height:1.55;}
+.device-choice-note{margin-top:16px;color:#526159;font-size:.68rem;letter-spacing:.7px;text-align:center;}
+@media(max-width:620px){
+    .device-choice-overlay{padding:10px;align-items:flex-start;}
+    .device-choice-window{padding:20px 14px;margin-top:8vh;}
+    .device-choice-grid{grid-template-columns:1fr;}
+    .device-choice-btn{min-height:125px;padding:16px;}
+    .device-choice-icon{font-size:1.7rem;margin-bottom:8px;}
+}
+/* Fix v3.11 tutorial clipping on phones */
+@media(max-width:850px){
+    .first-gig-tutorial-overlay{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;}
+    .first-gig-tutorial-window{max-height:calc(100dvh - 20px)!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;}
+    .first-gig-tutorial-footer{position:sticky!important;bottom:0!important;z-index:4!important;}
+}
+@media(max-width:560px){
+    .first-gig-tutorial-window{max-height:calc(100dvh - 10px)!important;}
+}
+
+
+/* v3.13 — USTAWIENIA / ZAPIS / WYBÓR URZĄDZENIA */
+.settings-menu-btn{
+    margin-left:auto!important;
+    min-width:48px!important;
+    padding:10px 14px!important;
+    font-size:1.2rem!important;
+    line-height:1!important;
+}
+.settings-overlay{
+    position:fixed; inset:0; z-index:10080; display:none; align-items:center; justify-content:center;
+    padding:18px; background:rgba(0,0,0,.88); backdrop-filter:blur(5px);
+}
+.settings-overlay.is-open{display:flex;}
+.settings-window{
+    width:min(620px,100%); max-height:calc(100dvh - 30px); overflow:auto;
+    background:#050b07; border:1px solid #39ff14; box-shadow:0 0 32px rgba(57,255,20,.16);
+    padding:20px; box-sizing:border-box;
+}
+.settings-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;}
+.settings-kicker{font-size:.7rem;letter-spacing:2px;color:var(--muted-text);margin-bottom:5px;}
+.settings-head h2{margin:0;color:#fff;letter-spacing:2px;}
+.settings-close{background:transparent;border:1px solid #526155;color:#fff;font-size:1.5rem;line-height:1;cursor:pointer;padding:5px 10px;}
+.settings-section{border-top:1px solid #244029;padding:16px 0;}
+.settings-section:first-of-type{border-top:0;}
+.settings-section h3{margin:0 0 8px;color:var(--neon-cyan);font-size:.95rem;letter-spacing:1px;}
+.settings-section p{margin:0 0 12px;color:var(--muted-text);line-height:1.55;}
+.settings-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.settings-actions button{flex:1 1 180px;min-height:44px;}
+.settings-current-mode{display:inline-block;margin-bottom:12px;padding:7px 10px;border:1px solid #3b7d45;background:#07140a;color:#fff;font-weight:bold;}
+.settings-save-note{border:1px solid #39ff14;background:rgba(57,255,20,.07);padding:12px;color:#d9ffd3!important;}
+.instruction-card.instruction-save-important{
+    border:2px solid #39ff14!important;
+    background:rgba(57,255,20,.07)!important;
+    box-shadow:0 0 22px rgba(57,255,20,.14)!important;
+}
+.instruction-card.instruction-save-important h3{color:#9cff8c!important;}
+.instructions-save-warning{
+    display:block; width:100%; margin-bottom:12px; padding:12px 14px; box-sizing:border-box;
+    border:1px solid #39ff14; background:rgba(57,255,20,.08); color:#e0ffdc; font-weight:bold;
+    letter-spacing:.4px;
+}
+@media(max-width:760px){
+    .settings-menu-btn{margin-left:0!important;}
+    .settings-overlay{padding:6px;align-items:stretch;}
+    .settings-window{max-height:100dvh;width:100%;padding:15px;}
+    .settings-actions{flex-direction:column;}
+    .settings-actions button{width:100%;flex:auto;}
+}
+</style>
+
 </head>
 <body>
+
+    <!-- v3.12 — WYBÓR URZĄDZENIA -->
+    <div id="device-choice-overlay" class="device-choice-overlay" role="dialog" aria-modal="true" aria-labelledby="device-choice-title">
+        <div class="device-choice-window">
+            <div class="device-choice-kicker">// DISPLAY MODE</div>
+            <h2 id="device-choice-title">NA CZYM GRASZ?</h2>
+            <p class="device-choice-copy">Wybierz układ interfejsu przed rozpoczęciem gry. Wersja komputerowa zachowuje dotychczasowy szeroki layout, a wersja telefoniczna używa responsywnego układu pod dotyk.</p>
+            <div class="device-choice-grid">
+                <button type="button" class="device-choice-btn" id="device-choice-desktop">
+                    <span class="device-choice-icon">🖥️</span>
+                    <span class="device-choice-title">KOMPUTER</span>
+                    <span class="device-choice-desc">Szeroki interfejs, klasyczny układ paneli i wygląd desktopowy.</span>
+                </button>
+                <button type="button" class="device-choice-btn" id="device-choice-mobile">
+                    <span class="device-choice-icon">📱</span>
+                    <span class="device-choice-title">TELEFON</span>
+                    <span class="device-choice-desc">Układ mobilny, większe kontrolki i elementy ustawione pod obsługę palcem.</span>
+                </button>
+            </div>
+            <div class="device-choice-note">WYBÓR ZOSTANIE ZAPAMIĘTANY. PÓŹNIEJ MOŻESZ GO ZMIENIĆ W USTAWIENIACH ⚙.</div>
+        </div>
+    </div>
+
+
+    <!-- v3.13 — USTAWIENIA -->
+    <div id="settings-overlay" class="settings-overlay" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <div class="settings-window">
+            <div class="settings-head">
+                <div>
+                    <div class="settings-kicker">// SYSTEM SETTINGS</div>
+                    <h2 id="settings-title">⚙ USTAWIENIA</h2>
+                </div>
+                <button type="button" class="settings-close" onclick="closeSettings()" aria-label="Zamknij ustawienia">×</button>
+            </div>
+
+            <section class="settings-section">
+                <h3>ZAPIS GRY</h3>
+                <p class="settings-save-note"><strong>WAŻNE:</strong> regularnie zapisuj postęp. Zapis jest przechowywany lokalnie w tej przeglądarce.</p>
+                <div class="settings-actions">
+                    <button type="button" class="save-btn" onclick="manualSaveGame()">💾 ZAPISZ GRĘ</button>
+                    <button type="button" class="reset-btn" onclick="manualResetGame()">RESETUJ POSTĘP</button>
+                </div>
+            </section>
+
+            <section class="settings-section">
+                <h3>TRYB URZĄDZENIA</h3>
+                <p>Aktualnie wybrany układ:</p>
+                <div class="settings-current-mode" id="settings-device-mode">—</div>
+                <div class="settings-actions">
+                    <button type="button" class="dj-btn" onclick="changeDeviceFromSettings()">🖥 / 📱 ZMIEŃ URZĄDZENIE</button>
+                </div>
+            </section>
+        </div>
+    </div>
 
     <!-- EKRAN STARTOWY / ŁADOWANIE -->
     <div id="game-loader" class="game-loader" aria-live="polite">
@@ -2927,10 +3076,15 @@
                     <h3>WŁASNY EVENT</h3>
                     <p>Po odblokowaniu organizacji eventów dobierasz lokal, promocję, gatunek, lineup, soundsystem i produkcję. Pilnuj budżetu — udana impreza może dać dużo pieniędzy i reputacji, ale ryzykujesz własną kasą.</p>
                 </section>
+                <section class="instruction-card instruction-save-important">
+                    <span class="instruction-num">09</span>
+                    <h3>⚙ USTAWIENIA I ZAPIS GRY</h3>
+                    <p><strong>Pamiętaj o regularnym zapisywaniu gry!</strong> Ikonę zębatki ⚙ znajdziesz w głównym menu. W USTAWIENIACH możesz ręcznie <strong>ZAPISAĆ GRĘ</strong>, zresetować postęp oraz zmienić tryb <strong>KOMPUTER / TELEFON</strong>.</p>
+                </section>
             </div>
 
             <div class="instructions-footer">
-                <span>POSTĘP ZAPISUJE SIĘ W PAMIĘCI TEJ PRZEGLĄDARKI.</span>
+                <span class="instructions-save-warning">⚠ PAMIĘTAJ: REGULARNIE UŻYWAJ ⚙ USTAWIENIA → 💾 ZAPISZ GRĘ. POSTĘP JEST PRZECHOWYWANY W TEJ PRZEGLĄDARCE.</span>
                 <button class="instructions-enter" onclick="closeInstructions()">ROZUMIEM // WEJDŹ DO GRY</button>
             </div>
         </div>
@@ -3091,6 +3245,7 @@
             <button class="tab-btn" id="btn-shop" onclick="switchTab('shop')">SKLEP MUZYCZNY</button>
             <button class="tab-btn" id="btn-event" onclick="switchTab('event')">WŁASNY EVENT</button>
             <button class="tab-btn instruction-menu-btn" id="btn-instructions" onclick="openInstructions()">INSTRUKCJA</button>
+            <button class="tab-btn settings-menu-btn" id="btn-settings" onclick="openSettings()" title="Ustawienia, zapis gry i tryb urządzenia" aria-label="Ustawienia">⚙</button>
         </nav>
 
         <section id="view-map" class="view-section active">
@@ -3288,10 +3443,7 @@
                         <div id="v2-dj-perks" class="v2-perk-grid"></div>
                     </div>
 
-                    <div class="save-control-box">
-                        <button class="save-btn" onclick="manualSaveGame()">Zapisz Stan</button>
-                        <button class="reset-btn" onclick="manualResetGame()">Reset Postępu</button>
-                    </div>
+
                 </div>
             </div>
         </section>
@@ -3540,6 +3692,7 @@
         let activeCrisesPool = [];
 
         const INSTRUCTIONS_SEEN_KEY = 'otchlan_instructions_seen_v1';
+        const DEVICE_MODE_KEY = 'otchlan_device_mode_v1';
         let instructionsFirstRun = false;
 
         function openInstructions(forceFirstRun = false) {
@@ -3564,18 +3717,89 @@
             document.body.style.overflow = '';
         }
 
+        let pendingFirstVisitInstructions = false;
+
+        function applyDeviceMode(mode) {
+            const safeMode = mode === 'desktop' ? 'desktop' : 'mobile';
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (viewport) {
+                viewport.setAttribute('content', safeMode === 'desktop'
+                    ? 'width=1280, initial-scale=1.0'
+                    : 'width=device-width, initial-scale=1.0');
+            }
+            document.body.dataset.deviceMode = safeMode;
+            const modeLabel = document.getElementById('settings-device-mode');
+            if (modeLabel) modeLabel.textContent = safeMode === 'desktop' ? '🖥 KOMPUTER' : '📱 TELEFON';
+        }
+
+        function openDeviceChoice(firstVisit = false) {
+            const overlay = document.getElementById('device-choice-overlay');
+            if (!overlay) {
+                if (firstVisit) openInstructions(true);
+                return;
+            }
+            pendingFirstVisitInstructions = firstVisit;
+            overlay.classList.add('is-open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function chooseDeviceMode(mode) {
+            const safeMode = mode === 'desktop' ? 'desktop' : 'mobile';
+            applyDeviceMode(safeMode);
+            localStorage.setItem(DEVICE_MODE_KEY, safeMode);
+            const overlay = document.getElementById('device-choice-overlay');
+            if (overlay) overlay.classList.remove('is-open');
+            document.body.style.overflow = '';
+            window.scrollTo(0, 0);
+
+            if (pendingFirstVisitInstructions) {
+                pendingFirstVisitInstructions = false;
+                setTimeout(() => openInstructions(true), 260);
+            }
+        }
+
+        function openSettings() {
+            if (currentGig !== null) {
+                alert('Ustawienia są dostępne poza trwającym setem. Zakończ lub przerwij set.');
+                return;
+            }
+            const overlay = document.getElementById('settings-overlay');
+            if (!overlay) return;
+            const savedMode = localStorage.getItem(DEVICE_MODE_KEY) || document.body.dataset.deviceMode || 'mobile';
+            applyDeviceMode(savedMode);
+            overlay.classList.add('is-open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSettings() {
+            const overlay = document.getElementById('settings-overlay');
+            if (overlay) overlay.classList.remove('is-open');
+            document.body.style.overflow = '';
+        }
+
+        function changeDeviceFromSettings() {
+            closeSettings();
+            openDeviceChoice(false);
+        }
+
         function runStartSequence() {
             const loader = document.getElementById('game-loader');
             const status = document.getElementById('loader-status');
             const firstVisit = localStorage.getItem(INSTRUCTIONS_SEEN_KEY) !== '1';
+            const savedMode = localStorage.getItem(DEVICE_MODE_KEY);
+            if (savedMode === 'desktop' || savedMode === 'mobile') applyDeviceMode(savedMode);
 
             setTimeout(() => { if (status) status.innerText = 'ŁADOWANIE PROFILU DJ-A...'; }, 420);
             setTimeout(() => { if (status) status.innerText = 'SYSTEM GOTOWY'; }, 980);
             setTimeout(() => {
                 if (loader) loader.classList.add('is-hidden');
-                if (firstVisit) {
-                    setTimeout(() => openInstructions(true), 360);
-                }
+                setTimeout(() => {
+                    if (savedMode === 'desktop' || savedMode === 'mobile') {
+                        if (firstVisit) openInstructions(true);
+                    } else {
+                        openDeviceChoice(firstVisit);
+                    }
+                }, 220);
             }, 1450);
         }
 
@@ -3584,6 +3808,9 @@
             switchTab('map');
             runStartSequence();
         };
+
+        document.getElementById('device-choice-desktop')?.addEventListener('click', () => chooseDeviceMode('desktop'));
+        document.getElementById('device-choice-mobile')?.addEventListener('click', () => chooseDeviceMode('mobile'));
 
         function switchTab(tabId) {
             if (currentGig !== null) {
@@ -4275,7 +4502,7 @@
 
         function manualSaveGame() { 
             saveGameState();
-            alert("Kariera zapisana pomyślnie w pamięci konsolety przeglądarki!"); 
+            alert("💾 Gra zapisana pomyślnie w pamięci tej przeglądarki."); 
         }
 
         function manualResetGame() { 

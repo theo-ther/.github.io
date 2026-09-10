@@ -6888,5 +6888,223 @@ document.addEventListener('keydown',e=>{
 })();
 </script>
 
+
+<script id="otchlan-security-layer-v1">
+/* =========================================================
+   OTCHŁAŃ SECURITY LAYER v1
+   - blokada prawego kliku
+   - blokada popularnych skrótów DevTools
+   - podstawowa integralność save'a (checksum + backup)
+   ========================================================= */
+(() => {
+    'use strict';
+
+    const SAVE_KEY = 'otchlan_game_save';
+    const SAVE_BACKUP_KEY = 'otchlan_game_save_backup';
+    const SAVE_TAMPER_FLAG = 'otchlan_save_tamper_flag_v1';
+    const SAVE_SECURITY_VERSION = 1;
+
+    function stableClone(value) {
+        if (Array.isArray(value)) return value.map(stableClone);
+        if (value && typeof value === 'object') {
+            const out = {};
+            Object.keys(value).sort().forEach(key => {
+                if (key === 'checksum' || key === 'securityVersion' || key === 'savedAt') return;
+                out[key] = stableClone(value[key]);
+            });
+            return out;
+        }
+        return value;
+    }
+
+    function checksumFromPayload(payload) {
+        const str = JSON.stringify(stableClone(payload));
+        let hash = 2166136261;
+        for (let i = 0; i < str.length; i++) {
+            hash ^= str.charCodeAt(i);
+            hash = Math.imul(hash, 16777619);
+        }
+        return (hash >>> 0).toString(16).padStart(8, '0');
+    }
+
+    function isFiniteNumber(n) {
+        return typeof n === 'number' && Number.isFinite(n);
+    }
+
+    function basicSaveLooksReasonable(data) {
+        if (!data || typeof data !== 'object') return false;
+        if (!data.player || typeof data.player !== 'object') return false;
+        if (!Array.isArray(data.boughtItems)) return false;
+
+        const p = data.player;
+        if (!isFiniteNumber(p.cash) || p.cash < 0 || p.cash > 100000000) return false;
+        if (!isFiniteNumber(p.exp) || p.exp < 0 || p.exp > 100000000) return false;
+        if (!isFiniteNumber(p.level) || p.level < 1 || p.level > 999) return false;
+        if (!p.stats || typeof p.stats !== 'object') return false;
+
+        const stats = ['timing', 'selection', 'control'];
+        for (const stat of stats) {
+            if (!isFiniteNumber(p.stats[stat]) || p.stats[stat] < 1 || p.stats[stat] > 999) return false;
+        }
+        if (!isFiniteNumber(p.skillPoints) || p.skillPoints < 0 || p.skillPoints > 999) return false;
+
+        if (p.reputation && typeof p.reputation === 'object') {
+            for (const [k, v] of Object.entries(p.reputation)) {
+                if (!isFiniteNumber(v) || v < 0 || v > 100000000) return false;
+            }
+        }
+        if (p.lifetimeStats && typeof p.lifetimeStats === 'object') {
+            for (const [k, v] of Object.entries(p.lifetimeStats)) {
+                if (!isFiniteNumber(v) || v < 0 || v > 100000000) return false;
+            }
+        }
+        return true;
+    }
+
+    function protectCurrentSave() {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return;
+        try {
+            const parsed = JSON.parse(raw);
+            if (!basicSaveLooksReasonable(parsed)) return;
+            parsed.securityVersion = SAVE_SECURITY_VERSION;
+            parsed.savedAt = Date.now();
+            parsed.checksum = checksumFromPayload(parsed);
+            const secured = JSON.stringify(parsed);
+            localStorage.setItem(SAVE_KEY, secured);
+            localStorage.setItem(SAVE_BACKUP_KEY, secured);
+            localStorage.removeItem(SAVE_TAMPER_FLAG);
+        } catch (err) {
+            console.warn('Save security: unable to secure current save.', err);
+        }
+    }
+
+    function validateRawSave(raw) {
+        if (!raw) return { ok: false, reason: 'empty' };
+        try {
+            const parsed = JSON.parse(raw);
+            if (!basicSaveLooksReasonable(parsed)) {
+                return { ok: false, reason: 'shape', parsed };
+            }
+            // Legacy saves (without checksum) are allowed once and upgraded on next save.
+            if (!parsed.checksum) {
+                return { ok: true, legacy: true, parsed };
+            }
+            const expected = checksumFromPayload(parsed);
+            if (parsed.checksum !== expected) {
+                return { ok: false, reason: 'checksum', parsed, expected };
+            }
+            return { ok: true, legacy: false, parsed };
+        } catch (err) {
+            return { ok: false, reason: 'json', error: err };
+        }
+    }
+
+    function restoreBackupIfPossible(showAlert = true) {
+        const backupRaw = localStorage.getItem(SAVE_BACKUP_KEY);
+        const backupState = validateRawSave(backupRaw);
+        if (backupState.ok) {
+            localStorage.setItem(SAVE_KEY, backupRaw);
+            localStorage.setItem(SAVE_TAMPER_FLAG, 'restored');
+            if (showAlert && typeof window.alert === 'function') {
+                alert('Wykryto nieprawidłową modyfikację zapisu. Przywrócono ostatni poprawny zapis.');
+            }
+            return true;
+        }
+        localStorage.removeItem(SAVE_KEY);
+        localStorage.setItem(SAVE_TAMPER_FLAG, 'removed');
+        if (showAlert && typeof window.alert === 'function') {
+            alert('Wykryto nieprawidłową modyfikację zapisu. Uszkodzony zapis został usunięty.');
+        }
+        return false;
+    }
+
+    function verifyOrRepairSaveBeforeLoad(showAlert = true) {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return { ok: true, missing: true };
+        const state = validateRawSave(raw);
+        if (state.ok) return state;
+        restoreBackupIfPossible(showAlert);
+        const repairedRaw = localStorage.getItem(SAVE_KEY);
+        return validateRawSave(repairedRaw);
+    }
+
+    // UI / casual-inspection blockers.
+    document.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+    }, { capture: true });
+
+    document.addEventListener('dragstart', (e) => {
+        e.preventDefault();
+    }, { capture: true });
+
+    document.addEventListener('keydown', (e) => {
+        const key = String(e.key || '').toLowerCase();
+        const blocked = (
+            e.key === 'F12' ||
+            (e.ctrlKey && e.shiftKey && ['i', 'j', 'c', 'k'].includes(key)) ||
+            (e.ctrlKey && ['u', 's'].includes(key))
+        );
+        if (blocked) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }, true);
+
+    function installSecurityHooks() {
+        if (typeof window.saveGameState === 'function' && !window.saveGameState.__securedWrapper) {
+            const originalSave = window.saveGameState;
+            const wrappedSave = function(...args) {
+                const result = originalSave.apply(this, args);
+                protectCurrentSave();
+                return result;
+            };
+            wrappedSave.__securedWrapper = true;
+            wrappedSave.__original = originalSave;
+            window.saveGameState = wrappedSave;
+        }
+
+        if (typeof window.loadGame === 'function' && !window.loadGame.__securedWrapper) {
+            const originalLoad = window.loadGame;
+            const wrappedLoad = function(...args) {
+                verifyOrRepairSaveBeforeLoad(true);
+                const result = originalLoad.apply(this, args);
+                const postRaw = localStorage.getItem(SAVE_KEY);
+                const postState = validateRawSave(postRaw);
+                if (postState.ok && postState.legacy) {
+                    // Upgrade old saves to protected format after a successful load.
+                    if (typeof window.saveGameState === 'function') {
+                        try { window.saveGameState(); } catch (e) { console.warn('Save security: upgrade save failed.', e); }
+                    }
+                }
+                return result;
+            };
+            wrappedLoad.__securedWrapper = true;
+            wrappedLoad.__original = originalLoad;
+            window.loadGame = wrappedLoad;
+        }
+    }
+
+    installSecurityHooks();
+    document.addEventListener('DOMContentLoaded', installSecurityHooks);
+    window.addEventListener('load', () => {
+        installSecurityHooks();
+        // Ensure any already-existing valid save gets upgraded with checksum after startup.
+        const state = validateRawSave(localStorage.getItem(SAVE_KEY));
+        if (state.ok && state.legacy && typeof window.saveGameState === 'function') {
+            try { window.saveGameState(); } catch (e) { console.warn('Save security: startup upgrade failed.', e); }
+        }
+    });
+
+    // Optional console access for debugging current build if needed.
+    window.__otchlanSecurity = {
+        verifyOrRepairSaveBeforeLoad,
+        protectCurrentSave,
+        checksumFromPayload
+    };
+})();
+</script>
+
 </body>
 </html>

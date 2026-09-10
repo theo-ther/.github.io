@@ -2988,6 +2988,74 @@
 }
 </style>
 
+
+<style id="otchlan-language-v314">
+.device-language-choice{margin:0 0 20px;padding:0 0 18px;border-bottom:1px solid #17351f}
+.device-choice-section-label{color:#8aa190;font-size:.68rem;letter-spacing:2px;margin:0 0 9px;font-weight:bold}
+.language-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.language-choice-btn{min-height:50px;background:#050b07;border:1px solid #29422f;color:#a8b9ac;font:900 .82rem 'Courier New',monospace;letter-spacing:1px;cursor:pointer}
+.language-choice-btn:hover,.language-choice-btn.selected,.language-settings-btn.selected{border-color:#39ff14!important;background:#0d2112!important;color:#eaffec!important;box-shadow:inset 3px 0 0 #39ff14,0 0 14px rgba(57,255,20,.08)!important}
+@media(max-width:620px){.language-choice-grid{grid-template-columns:1fr 1fr}.language-choice-btn{min-height:46px}}
+</style>
+
+
+<style id="instructions-fit-v315">
+/* v3.15 — instrukcja mieści się na ekranie desktopowym bez przewijania */
+@media (min-width: 761px) {
+    .instructions-overlay { padding: 12px; }
+    .instructions-window {
+        width: min(1380px, calc(100vw - 24px));
+        max-height: calc(100vh - 24px);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .instructions-head {
+        position: static;
+        flex: 0 0 auto;
+        padding: 13px 18px 11px;
+    }
+    .instructions-kicker { margin-bottom: 3px; font-size: .55rem; }
+    .instructions-head h2 { font-size: clamp(1.15rem, 2vw, 1.55rem); }
+    .instructions-close { width: 36px; height: 36px; flex-basis: 36px; font-size: 1.45rem; }
+    .instructions-grid {
+        flex: 1 1 auto;
+        min-height: 0;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-rows: repeat(3, minmax(0, 1fr));
+        overflow: hidden;
+    }
+    .instruction-card {
+        min-height: 0;
+        padding: 12px 14px 11px 43px;
+        overflow: hidden;
+    }
+    .instruction-num { top: 13px; left: 14px; font-size: .58rem; }
+    .instruction-card h3 { margin-bottom: 5px; font-size: .70rem; line-height: 1.2; }
+    .instruction-card p { font-size: clamp(.60rem, .70vw, .70rem); line-height: 1.42; }
+    .instructions-footer {
+        flex: 0 0 auto;
+        padding: 10px 14px;
+        gap: 12px;
+    }
+    .instructions-footer > span { font-size: .52rem; line-height: 1.35; }
+    .instructions-enter { padding: 10px 14px; font-size: .63rem; }
+}
+
+/* Przy pierwszym uruchomieniu instrukcję kończy się świadomie przyciskiem na dole. */
+.instructions-overlay.first-run .instructions-close { display: none; }
+
+@media (min-width: 761px) and (max-height: 650px) {
+    .instructions-head { padding: 9px 14px 8px; }
+    .instructions-head h2 { font-size: 1.05rem; }
+    .instruction-card { padding: 9px 11px 8px 38px; }
+    .instruction-num { top: 10px; left: 12px; }
+    .instruction-card h3 { font-size: .64rem; margin-bottom: 3px; }
+    .instruction-card p { font-size: .57rem; line-height: 1.3; }
+    .instructions-footer { padding: 8px 11px; }
+}
+</style>
+
 </head>
 <body>
 
@@ -2997,6 +3065,14 @@
             <div class="device-choice-kicker">// DISPLAY MODE</div>
             <h2 id="device-choice-title">NA CZYM GRASZ?</h2>
             <p class="device-choice-copy">Wybierz układ interfejsu przed rozpoczęciem gry. Wersja komputerowa zachowuje dotychczasowy szeroki layout, a wersja telefoniczna używa responsywnego układu pod dotyk.</p>
+            <div id="device-language-choice" class="device-language-choice">
+                <div class="device-choice-section-label">JĘZYK / LANGUAGE</div>
+                <div class="language-choice-grid">
+                    <button type="button" class="language-choice-btn" id="language-choice-pl">POLSKI</button>
+                    <button type="button" class="language-choice-btn" id="language-choice-en">ENGLISH</button>
+                </div>
+            </div>
+            <div class="device-choice-section-label">URZĄDZENIE / DEVICE</div>
             <div class="device-choice-grid">
                 <button type="button" class="device-choice-btn" id="device-choice-desktop">
                     <span class="device-choice-icon">🖥️</span>
@@ -3035,6 +3111,15 @@
             </section>
 
             <section class="settings-section">
+                <h3>JĘZYK</h3>
+                <p>Zmień język gry:</p>
+                <div class="settings-actions">
+                    <button type="button" class="dj-btn language-settings-btn" id="settings-language-pl" onclick="setGameLanguage('pl')">POLSKI</button>
+                    <button type="button" class="dj-btn language-settings-btn" id="settings-language-en" onclick="setGameLanguage('en')">ENGLISH</button>
+                </div>
+            </section>
+
+            <section class="settings-section">
                 <h3>TRYB URZĄDZENIA</h3>
                 <p>Aktualnie wybrany układ:</p>
                 <div class="settings-current-mode" id="settings-device-mode">—</div>
@@ -3049,7 +3134,7 @@
     <div id="game-loader" class="game-loader" aria-live="polite">
         <div class="loader-noise"></div>
         <div class="loader-inner">
-            <img class="loader-logo" src="https://zapodaj.net/images/c174f1e280ee5.png" alt="OTCHŁAŃ" onerror="this.style.display='none'; document.getElementById('loader-logo-fallback').style.display='block';">
+            <img class="loader-logo" src="https://zapodaj.net/images/c174f1e280ee5.png" referrerpolicy="no-referrer" alt="OTCHŁAŃ" onerror="this.style.display='none'; document.getElementById('loader-logo-fallback').style.display='block';">
             <div id="loader-logo-fallback" class="loader-logo-fallback">OTCHŁAŃ</div>
             <div class="loader-line"></div>
             <div class="loader-status" id="loader-status">INICJALIZACJA SYSTEMU...</div>
@@ -3057,73 +3142,36 @@
         </div>
     </div>
 
-    <!-- INSTRUKCJA GRY -->
+    <!-- v4.0 — INTERAKTYWNY ONBOARDING / INSTRUKCJA SLIDE-BY-SLIDE -->
     <div id="instructions-overlay" class="instructions-overlay" role="dialog" aria-modal="true" aria-labelledby="instructions-title">
-        <div class="instructions-window">
-            <div class="instructions-head">
+        <div class="instructions-window onboarding-window">
+            <div class="instructions-head onboarding-head">
                 <div>
-                    <div class="instructions-kicker">// OTCHŁAŃ DATABASE</div>
-                    <h2 id="instructions-title">INSTRUKCJA GRY</h2>
+                    <div class="instructions-kicker" id="onboarding-kicker">// OTCHŁAŃ TRAINING DATABASE</div>
+                    <h2 id="instructions-title">WPROWADZENIE</h2>
                 </div>
-                <button class="instructions-close" onclick="closeInstructions()" aria-label="Zamknij instrukcję">×</button>
+                <div class="onboarding-head-right">
+                    <div class="onboarding-counter" id="onboarding-counter">01 / 09</div>
+                    <button class="instructions-close" onclick="closeInstructions()" aria-label="Zamknij instrukcję">×</button>
+                </div>
             </div>
 
-            <div class="instructions-grid">
-                <section class="instruction-card">
-                    <span class="instruction-num">01</span>
-                    <h3>CEL GRY</h3>
-                    <p>Zaczynasz jako początkujący DJ. Graj bookingi, zdobywaj EXP i reputację, kupuj lepszy sprzęt, rozwijaj postać i buduj własne eventy aż do odblokowania końcowych etapów kariery.</p>
-                </section>
-                <section class="instruction-card">
-                    <span class="instruction-num">02</span>
-                    <h3>MAPA, DNI I BOOKINGI</h3>
-                    <p>Na mapie wybierasz dostępny klub. Każdy rozegrany lub przerwany set przesuwa kalendarz o 1 dzień. Bookingi odblokowują się po zdobyciu 2000 punktów reputacji. Oferty bookingów odświeżają się co tydzień. Po przyjęciu booking ma konkretny dzień występu — możesz zagrać go tylko tego dnia. Jeśli go przegapisz, tracisz reputację.</p>
-                </section>
-                <section class="instruction-card">
-                    <span class="instruction-num">03</span>
-                    <h3>SET DJ-SKI</h3>
-                    <p>Dopasuj suwakiem swoje BPM do wartości <strong>Target</strong>. Następnie wykonaj wskazaną akcję — DROP albo PRZEJŚCIE — kiedy marker znajduje się w zaznaczonej strefie timingowej.</p>
-                </section>
-                <section class="instruction-card">
-                    <span class="instruction-num">04</span>
-                    <h3>ENERGIA I ZAUFANIE</h3>
-                    <p>Dobre przejścia podnoszą energię i zaufanie publiki, a błędy je obniżają. Jeśli energia spadnie do zera, set kończy się porażką. Podczas własnych imprez mogą pojawiać się dodatkowe sytuacje kryzysowe.</p>
-                </section>
-                <section class="instruction-card">
-                    <span class="instruction-num">05</span>
-                    <h3>KARIERA</h3>
-                    <p>Zdobywany EXP zwiększa poziom DJ-a i daje punkty rozwoju. W jednej sekcji rozwijasz Timing, Selekcję, Crowd Control oraz perki. Osobna zakładka QUESTY daje długoterminowe zadania i nagrody za rozwój całej kariery.</p>
-                </section>
-                <section class="instruction-card">
-                    <span class="instruction-num">06</span>
-                    <h3>SPRZĘT</h3>
-                    <p>W sklepie kupujesz prawdziwe modele słuchawek, nośników, kontrolerów/decków, ochrony słuchu i nagłośnienia. Wyposażony sprzęt daje bonusy do cech DJ-skich.</p>
-                </section>
-                <section class="instruction-card">
-                    <span class="instruction-num">07</span>
-                    <h3>KONTAKTY I REPUTACJE</h3>
-                    <p>Rozwijaj kontakty i cztery rodzaje reputacji. Relacje mogą odblokować bonusy, ułatwiać rozwój kariery i wzmacniać efekty wybranych działań.</p>
-                </section>
-                <section class="instruction-card">
-                    <span class="instruction-num">08</span>
-                    <h3>WŁASNY EVENT</h3>
-                    <p>Po odblokowaniu organizacji eventów dobierasz lokal, promocję, gatunek, lineup, soundsystem i produkcję. Pilnuj budżetu — udana impreza może dać dużo pieniędzy i reputacji, ale ryzykujesz własną kasą.</p>
-                </section>
-                <section class="instruction-card instruction-save-important">
-                    <span class="instruction-num">09</span>
-                    <h3>⚙ USTAWIENIA I ZAPIS GRY</h3>
-                    <p><strong>Pamiętaj o regularnym zapisywaniu gry!</strong> Ikonę zębatki ⚙ znajdziesz w głównym menu. W USTAWIENIACH możesz ręcznie <strong>ZAPISAĆ GRĘ</strong>, zresetować postęp oraz zmienić tryb <strong>KOMPUTER / TELEFON</strong>.</p>
-                </section>
+            <div class="onboarding-progress" aria-hidden="true">
+                <div class="onboarding-progress-fill" id="onboarding-progress-fill"></div>
             </div>
 
-            <div class="instructions-footer">
-                <span class="instructions-save-warning">⚠ PAMIĘTAJ: REGULARNIE UŻYWAJ ⚙ USTAWIENIA → 💾 ZAPISZ GRĘ. POSTĘP JEST PRZECHOWYWANY W TEJ PRZEGLĄDARCE.</span>
-                <button class="instructions-enter" onclick="closeInstructions()">ROZUMIEM // WEJDŹ DO GRY</button>
+            <main class="onboarding-stage" id="onboarding-stage"></main>
+
+            <div class="instructions-footer onboarding-footer">
+                <button type="button" class="onboarding-back" id="onboarding-back" onclick="onboardingPrev()">← WSTECZ</button>
+                <div class="onboarding-footer-center">
+                    <div class="onboarding-dots" id="onboarding-dots"></div>
+                    <div class="onboarding-hint" id="onboarding-hint"></div>
+                </div>
+                <button type="button" class="instructions-enter onboarding-next" id="onboarding-next" onclick="onboardingNext()">DALEJ →</button>
             </div>
         </div>
     </div>
-
-
 
 
     <!-- v3.9: TUTORIAL PIERWSZEGO SETA -->
@@ -3248,7 +3296,7 @@
 
     <header>
         <div class="logo">
-            <img src="https://zapodaj.net/images/c174f1e280ee5.png" alt="OTCHŁAŃ" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
+            <img src="https://zapodaj.net/images/c174f1e280ee5.png" referrerpolicy="no-referrer" alt="OTCHŁAŃ" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
             <h1 id="logo-fallback" class="logo-fallback neon-text">OTCHŁAŃ</h1>
         </div>
         <div class="hud-stats">
@@ -3724,7 +3772,7 @@
         // Dynamiczna pula kryzysów zapobiegająca powtórzeniom
         let activeCrisesPool = [];
 
-        const INSTRUCTIONS_SEEN_KEY = 'otchlan_instructions_seen_v1';
+        const INSTRUCTIONS_SEEN_KEY = 'otchlan_interactive_onboarding_seen_v1';
         const DEVICE_MODE_KEY = 'otchlan_device_mode_v1';
         let instructionsFirstRun = false;
 
@@ -3736,13 +3784,14 @@
             const overlay = document.getElementById('instructions-overlay');
             if (!overlay) return;
             instructionsFirstRun = forceFirstRun;
+            overlay.classList.toggle('first-run', !!forceFirstRun);
             overlay.classList.add('is-open');
             document.body.style.overflow = 'hidden';
         }
 
         function closeInstructions() {
             const overlay = document.getElementById('instructions-overlay');
-            if (overlay) overlay.classList.remove('is-open');
+            if (overlay) overlay.classList.remove('is-open', 'first-run');
             if (instructionsFirstRun) {
                 localStorage.setItem(INSTRUCTIONS_SEEN_KEY, '1');
                 instructionsFirstRun = false;
@@ -5765,9 +5814,1079 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 const overlay = document.getElementById('instructions-overlay');
-                if (overlay && overlay.classList.contains('is-open')) closeInstructions();
+                if (overlay && overlay.classList.contains('is-open') && !overlay.classList.contains('first-run')) closeInstructions();
             }
         });
 </script>
+
+<script id="otchlan-language-script-v314">
+(function(){
+'use strict';
+const LANGUAGE_KEY='otchlan_language_v1';
+const EXACT={"INICJALIZACJA SYSTEMU...":"INITIALIZING SYSTEM...","INSTRUKCJA GRY":"GAME GUIDE","CEL GRY":"GAME OBJECTIVE","Zaczynasz jako początkujący DJ. Graj bookingi, zdobywaj EXP i reputację, kupuj lepszy sprzęt, rozwijaj postać i buduj własne eventy aż do odblokowania końcowych etapów kariery.":"You start as a beginner DJ. Play bookings, earn EXP and reputation, buy better gear, develop your character and build your own events until you unlock the final stages of the career.","MAPA, DNI I BOOKINGI":"MAP, DAYS & BOOKINGS","Na mapie wybierasz dostępny klub. Każdy rozegrany lub przerwany set przesuwa kalendarz o 1 dzień. Oferty bookingów odświeżają się co tydzień. Po przyjęciu booking ma konkretny dzień występu — możesz zagrać go tylko tego dnia. Jeśli go przegapisz, tracisz reputację.":"Choose an available club on the map. Every completed or aborted set advances the calendar by 1 day. Booking offers refresh every week. Once accepted, a booking has a fixed performance day — you can play it only on that day. If you miss it, you lose reputation.","SET DJ-SKI":"DJ SET",". Następnie wykonaj wskazaną akcję — DROP albo PRZEJŚCIE — kiedy marker znajduje się w zaznaczonej strefie timingowej.":". Then perform the requested action — DROP or TRANSITION — while the marker is inside the highlighted timing zone.","ENERGIA I ZAUFANIE":"ENERGY & TRUST","Dobre przejścia podnoszą energię i zaufanie publiki, a błędy je obniżają. Jeśli energia spadnie do zera, set kończy się porażką. Podczas własnych imprez mogą pojawiać się dodatkowe sytuacje kryzysowe.":"Good transitions increase crowd energy and trust, while mistakes lower them. If energy falls to zero, the set ends in failure. Extra crisis situations may appear during your own events.","Zdobywany EXP zwiększa poziom DJ-a i daje punkty rozwoju. W jednej sekcji rozwijasz Timing, Selekcję, Crowd Control oraz perki. Osobna zakładka QUESTY daje długoterminowe zadania i nagrody za rozwój całej kariery.":"Earned EXP raises your DJ level and grants development points. In one section you improve Timing, Selection, Crowd Control and perks. The separate QUESTS tab provides long-term objectives and career rewards.","SPRZĘT":"GEAR","W sklepie kupujesz prawdziwe modele słuchawek, nośników, kontrolerów/decków, ochrony słuchu i nagłośnienia. Wyposażony sprzęt daje bonusy do cech DJ-skich.":"In the shop you buy real models of headphones, storage media, controllers/decks, hearing protection and sound systems. Equipped gear gives bonuses to your DJ stats.","KONTAKTY I REPUTACJE":"CONTACTS & REPUTATIONS","Rozwijaj kontakty i cztery rodzaje reputacji. Relacje mogą odblokować bonusy, ułatwiać rozwój kariery i wzmacniać efekty wybranych działań.":"Build contacts and four types of reputation. Relationships can unlock bonuses, make career progression easier and strengthen selected actions.","WŁASNY EVENT":"YOUR EVENT","Po odblokowaniu organizacji eventów dobierasz lokal, promocję, gatunek, lineup, soundsystem i produkcję. Pilnuj budżetu — udana impreza może dać dużo pieniędzy i reputacji, ale ryzykujesz własną kasą.":"After unlocking event organization, choose a venue, promotion, genre, lineup, sound system and production. Watch your budget — a successful event can earn a lot of money and reputation, but your own cash is at risk.","POSTĘP ZAPISUJE SIĘ W PAMIĘCI TEJ PRZEGLĄDARKI.":"PROGRESS IS SAVED IN THIS BROWSER.","ROZUMIEM // WEJDŹ DO GRY":"GOT IT // ENTER GAME","SYNC ENGINE // AUTOMATYCZNA SYNCHRONIZACJA BPM":"SYNC ENGINE // AUTOMATIC BPM SYNC","SYNC BUTTON v0.0.1 // TECHNOLOGIA PRZYSZŁOŚCI":"SYNC BUTTON v0.0.1 // FUTURE TECHNOLOGY","Poziom:":"Level:","Reputacja:":"Reputation:","pkt":"pts","Kasa:":"Cash:","GŁÓWNY CEL GRY":"MAIN GAME OBJECTIVE","ODBLOKUJ KONKURS OTCHŁAŃ X":"UNLOCK THE OTCHŁAŃ X CONTEST","Rozwijaj karierę i osiągnij 15 poziom, aby odblokować finałowy konkurs.":"Build your career and reach level 15 to unlock the final contest.","POSTĘP":"PROGRESS","POZIOM 1 / 15":"LEVEL 1 / 15","KONKURS (OD 15 LVL)":"CONTEST (FROM LVL 15)","MAPA MIASTA":"CITY MAP","SKLEP MUZYCZNY":"MUSIC SHOP","INSTRUKCJA":"GUIDE","SCHEMAT MIASTA // PÓŁNOC ↑ // NIE DO NAWIGACJI":"CITY SCHEMATIC // NORTH ↑ // NOT FOR NAVIGATION","ŁAZARZ":"ŁAZARZ","CENTRUM":"CITY CENTRE","STARE MIASTO":"OLD TOWN","Piwnica na Łazarzu":"Basement in Łazarz","Wym. Rep: 0":"Req. Rep: 0","Wym. Rep: 150":"Req. Rep: 150","Wym. Rep: 600":"Req. Rep: 600","Wym. Rep: 1500":"Req. Rep: 1500","Łazarz // lokacja fabularna":"Łazarz // story location","> Kluby otwarto. Wybierz miejsce do zagrania seta.":"> Clubs are open. Choose a place to play a set.","⚠️ SYTUACJA AWARYJNA":"⚠️ EMERGENCY","MIKSOWANIE LIVE":"LIVE MIXING","NUMER: 1 / 5":"TRACK: 1 / 5","Dopasuj Pitch (BPM):":"Match Pitch (BPM):","WYMAGANA AKCJA: ???":"REQUIRED ACTION: ???","🔥 Odpal DROP":"🔥 DROP","🎛️ Zrób Przejście":"🎛️ Transition","Uciekaj z klubu (Przerwij set)":"Leave the club (Abort set)","STAN REAKCJI LUDZI":"CROWD RESPONSE","Ukończ wszystkie numery w secie i utrzymaj tłum!":"Finish all tracks in the set and keep the crowd going!","Energia tłumu:":"Crowd energy:","Zaufanie publiki:":"Crowd trust:","Klubowicze na sali:":"People in the club:","Aktualny vibe:":"Current vibe:","Neutralny":"Neutral","> Mikser gotowy. Kontroluj zadania powyżej!":"> Mixer ready. Follow the tasks above!","📊 PASZPORT POSTACI":"📊 CHARACTER PASSPORT","Doświadczenie (EXP):":"Experience (EXP):","Poziom DJ-a:":"DJ level:","Zagrane kontrakty:":"Gigs played:","Zorganizowane eventy:":"Events hosted:","Łącznie zarobiono (Brutto):":"Total earned (gross):","🎛️ AKTUALNE WYPOSAŻENIE":"🎛️ CURRENT EQUIPMENT","🎛️ CECHY DJ-SKIE":"🎛️ DJ STATS","Dostępne punkty rozwoju:":"Available development points:","Timing (Wyczucie rytmu)":"Timing (Rhythm sense)","Zwiększa margines błędu w grze rytmicznej.":"Increases the margin for error in the rhythm game.","Selekcja (Znajomość muzyki)":"Selection (Music knowledge)","Bazowa energia generowana na starcie seta.":"Base energy generated at the start of a set.","Crowd Control (Charyzma)":"Crowd Control (Charisma)","Szybsza stabilizacja tłumu po pomyłkach.":"Faster crowd recovery after mistakes.","SPECJALIZACJE / PERKI":"SPECIALIZATIONS / PERKS","Perki są częścią Cech DJ-skich i korzystają z tych samych punktów rozwoju co Timing, Selekcja i Crowd Control.":"Perks are part of DJ Stats and use the same development points as Timing, Selection and Crowd Control.","Zapisz Stan":"Save Game","Reset Postępu":"Reset Progress","🎧 SKLEP MUZYCZNY":"🎧 MUSIC SHOP","🔒 OPCJA ZABLOKOWANA":"🔒 OPTION LOCKED","Nikt w mieście jeszcze Cię nie zna. Zdobądź doświadczenie grając na kontraktach w klubach, aby wyrobić sobie markę.":"Nobody in the city knows you yet. Gain experience by playing club gigs to build your name.","WYMAGANY POZIOM DJ-a: 10":"REQUIRED DJ LEVEL: 10","PRODUKCJA IMPREZY „OTCHŁAŃ”":"“OTCHŁAŃ” EVENT PRODUCTION","Wybierz lokację pod własną markę:":"Choose a venue for your own brand:","Budżet na promocję:":"Promotion budget:","Szeptany marketing po znajomych (Koszt: 100 PLN)":"Word-of-mouth among friends (Cost: 100 PLN)","Plakatowanie miasta + wlepy (Koszt: 500 PLN)":"City posters + stickers (Cost: 500 PLN)","Agresywna kampania w socialach (Koszt: 1000 PLN)":"Aggressive social-media campaign (Cost: 1000 PLN)","Główny nurt muzyczny nocy (BASS MUSIC):":"Main music style of the night (BASS MUSIC):","SZACOWANE REZULTATY FINANSOWE (Otrzymasz 50% zysku z bramki):":"ESTIMATED FINANCIAL RESULTS (You receive 50% of door revenue):","Koszt produkcji (płatne z góry):":"Production cost (paid upfront):","Szacowana frekwencja:":"Estimated attendance:","0 osób":"0 people","Twój maksymalny zysk:":"Your maximum profit:","🔥 ODPAL EVENT \"OTCHŁAŃ\"":"🔥 LAUNCH “OTCHŁAŃ” EVENT","Konkurs OTCHŁAŃ X jest dostępny po osiągnięciu odpowiedniego poziomu kariery.":"The OTCHŁAŃ X contest becomes available after reaching the required career level.","WYMAGANY POZIOM DJ-a: 15":"REQUIRED DJ LEVEL: 15","🎟️ KONKURS // OTCHŁAŃ X 🎟️":"🎟️ CONTEST // OTCHŁAŃ X 🎟️","Nagroda zostanie załadowana po weryfikacji poziomu postaci.":"The reward will be loaded after your character level is verified.","Tanie pchełki z kiosku":"Cheap kiosk earbuds","Starter. Słaba izolacja i mało precyzyjny odsłuch.":"Starter. Poor isolation and imprecise monitoring.","+3 Timing. Budżetowe słuchawki DJ do nauki i pierwszych bookingów.":"+3 Timing. Budget DJ headphones for learning and first bookings.","+7 Timing. Klasyk boothu: lekkie, głośne i dobrze izolujące.":"+7 Timing. Booth classic: light, loud and well isolated.","+8 Timing. Uniwersalny model do DJ-ki, produkcji i przygotowania setów.":"+8 Timing. Versatile model for DJing, production and set preparation.","+12 Timing. Topowa półka DJ — bardzo pewny odsłuch w głośnym boothie.":"+12 Timing. Top-tier DJ monitoring for a loud booth.","Brak ochrony słuchu":"No hearing protection","Po secie dzwoni Ci w uszach, a długi odsłuch męczy.":"Your ears ring after the set and long monitoring sessions are tiring.","+2 Crowd Control. Tani, sensowny start do klubów i koncertów.":"+2 Crowd Control. Cheap, sensible start for clubs and concerts.","+5 Crowd Control. Wymienne filtry i ochrona nastawiona na muzyków/DJ-ów.":"+5 Crowd Control. Replaceable filters and protection aimed at musicians/DJs.","+6 Crowd Control. Ochrona do koncertów i klubów przy zachowaniu czytelności muzyki.":"+6 Crowd Control. Protection for concerts and clubs while keeping the music clear.","+8 Crowd Control. Wyższa półka uniwersalnych stoperów eventowych.":"+8 Crowd Control. Higher-tier universal event earplugs.","Starter. Baza potrafi przyciąć się przy ładowaniu tracka.":"Starter. The library may stutter while loading a track.","+3 Selekcja. Tani i szybki nośnik na pierwsze rekordboxowe biblioteki.":"+3 Selection. Cheap and fast storage for your first Rekordbox libraries.","+6 Selekcja. Metalowa obudowa i szybki dostęp do dużej biblioteki.":"+6 Selection. Metal body and fast access to a large library.","+9 Selekcja. Szybki nośnik do rozbudowanych playlist i częstych zmian crate'u.":"+9 Selection. Fast storage for large playlists and frequent crate changes.","+12 Selekcja. Dedykowany nośnik DJ z najwyższej półki w tej kategorii.":"+12 Selection. High-end dedicated DJ storage.","Stary laptop z klawiaturą":"Old laptop with keyboard","Starter. Miksowanie myszką i spacją, duże opóźnienia.":"Starter. Mixing with a mouse and spacebar, with heavy latency.","+3 Timing, +1 Selekcja. Kompaktowy wejściowy kontroler DJ.":"+3 Timing, +1 Selection. Compact entry-level DJ controller.","+5 Timing, +3 Selekcja. Popularny 2-kanałowy setup do nauki i małych gigów.":"+5 Timing, +3 Selection. Popular 2-channel setup for learning and small gigs.","+7 Timing, +5 Selekcja. 4 kanały i workflow mocno inspirowany sprzętem klubowym.":"+7 Timing, +5 Selection. 4 channels and a workflow strongly inspired by club gear.","+10 Timing, +8 Selekcja. Profesjonalny all-in-one bez potrzeby wożenia laptopa.":"+10 Timing, +8 Selection. Professional all-in-one with no need to carry a laptop.","+18 Timing, +14 Selekcja. Flagowy booth — końcowy sprzętowy cel kariery.":"+18 Timing, +14 Selection. Flagship booth — the final gear goal of the career.","Głośniki wbudowane w laptopa":"Built-in laptop speakers","Starter. Brak realnego dołu i mała kontrola nad brzmieniem.":"Starter. No real low end and little control over the sound.","+3 Crowd Control. Budżetowy, popularny zestaw monitorów do przygotowania setów.":"+3 Crowd Control. Popular budget monitors for preparing sets.","+5 Crowd Control. Mocniejszy odsłuch i więcej pewności przy selekcji basowej.":"+5 Crowd Control. Stronger monitoring and more confidence with bass-heavy selection.","+6 Crowd Control. Czytelny monitoring do przygotowania miksów i setów.":"+6 Crowd Control. Clear monitoring for preparing mixes and sets.","+8 Crowd Control. Półka prosumencka/studyjna z większym zapasem niskiego środka.":"+8 Crowd Control. Prosumer/studio tier with more low-mid headroom.","+11 Crowd Control. Pierwszy prawdziwy mobilny PA na własne małe eventy.":"+11 Crowd Control. Your first real mobile PA for small self-promoted events.","+16 Crowd Control. Mocny zestaw aktywny z subwooferem do większych sal.":"+16 Crowd Control. Powerful active system with a subwoofer for larger rooms.","+21 Crowd Control. Duży, profesjonalny system eventowy z konkretnym zapasem SPL i basu.":"+21 Crowd Control. Large professional event system with serious SPL and bass headroom.","+35 Crowd Control. Absolutny top of the top — ściana basu i końcowy cel sprzętowy dla własnych eventów.":"+35 Crowd Control. Absolute top tier — a wall of bass and the final equipment goal for your own events.","Słuchawki (Timing)":"Headphones (Timing)","Ochrona Słuchu (Crowd Control)":"Hearing Protection (Crowd Control)","Dyski & Pendrive (Selekcja)":"Storage & USB Drives (Selection)","Kontrolery / All-in-one / Decki (Timing / Selekcja)":"Controllers / All-in-one / Decks (Timing / Selection)","Systemy Nagłośnienia (Crowd Control)":"Sound Systems (Crowd Control)","W UŻYCIU":"EQUIPPED","ZAŁÓŻ":"EQUIP","KUP":"BUY","Instrukcja jest dostępna poza trwającym setem. Zakończ lub przerwij set, aby ją otworzyć.":"The guide is available outside an active set. Finish or abort the set to open it.","ŁADOWANIE PROFILU DJ-A...":"LOADING DJ PROFILE...","SYSTEM GOTOWY":"SYSTEM READY","Nie możesz zmienić zakładki w trakcie grania! Zakończ seta lub uciekaj z klubu.":"You cannot change tabs while playing! Finish the set or leave the club.","WŁASNY EVENT (OD 10 LVL)":"YOUR EVENT (FROM LVL 10)","ZORGANIZUJ EVENT":"ORGANIZE EVENT","OTWÓRZ KONKURS":"OPEN CONTEST","Twój poziom doświadczenia jest za mały! Wymagany poziom: 10.":"Your experience level is too low! Required level: 10.","Brak kasy na produkcję imprezy!":"Not enough cash to produce the event!","WYMAGANA AKCJA: 🎛️ ZRÓB PRZEJŚCIE":"REQUIRED ACTION: 🎛️ TRANSITION","OGIEŃ!":"ON FIRE!","BUJA SIĘ":"MOVING","STREFA GWIZDÓW":"BOO ZONE","❌ KLAPA! Energia spadła do zera. Impreza przerwana.":"❌ FAILURE! Energy fell to zero. The event was stopped.","Kariera zapisana pomyślnie w pamięci konsolety przeglądarki!":"Career saved successfully in the browser!","Czy na pewno chcesz zresetować postęp? Ta operacja usunie również plik zapisu!":"Are you sure you want to reset progress? This will also delete the save file!","Postęp został zresetowany.":"Progress has been reset.","Błąd ładowania pliku zapisu:":"Error loading the save file:","Marker rytmu porusza się 15% wolniej.":"The rhythm marker moves 15% slower.","+5 energii tłumu na starcie każdego seta.":"+5 crowd energy at the start of every set.","Więcej czasu na kryzysy i mocniejszy skill check.":"More time for crises and a stronger skill check.","-10% kosztów usług przy własnych eventach.":"-10% service costs for your own events.","+25% reputacji Underground i +5 startowej energii w małych klubach.":"+25% Underground reputation and +5 starting energy in small clubs.","Startujesz bliżej właściwego BPM i masz mniejsze ryzyko przycięcia nośnika.":"You start closer to the correct BPM and have a lower chance of storage stutter.","Odblokowuje SYNC podczas seta. Jeden klik ma automatycznie dopasować BPM. Technologia przyszłości.":"Unlocks SYNC during a set. One click automatically matches BPM. Technology of the future.","Nagłośnienie lokalu":"Venue sound system","Ściana basowa / soundsystem":"Bass wall / sound system","Doświadczona ochrona + stage manager":"Experienced security + stage manager","Światła + stroboskopy":"Lights + strobes","Pełna oprawa AV":"Full AV production","visuale i produkcja wydarzeń":"visuals and event production","RÓWNO W PUNKT":"RIGHT ON THE BEAT","Zagraj 5 perfekcyjnych przejść.":"Play 5 perfect transitions.","PEWNA RĘKA":"STEADY HAND","Zagraj 25 perfekcyjnych przejść.":"Play 25 perfect transitions.","Zagraj 100 perfekcyjnych przejść.":"Play 100 perfect transitions.","PARKIET PŁONIE":"DANCEFLOOR ON FIRE","Osiągnij co najmniej 90% energii tłumu.":"Reach at least 90% crowd energy.","100% OGIEŃ":"100% FIRE","Doprowadź energię tłumu do pełnych 100%.":"Bring crowd energy to a full 100%.","Zakończ 6 setów w karierze.":"Finish 6 sets in your career.","STAŁY BYWALEC":"REGULAR","Zakończ 20 setów.":"Finish 20 sets.","Zakończ 50 setów.":"Finish 50 sets.","PIERWSZY ROZDZIAŁ":"FIRST CHAPTER","Osiągnij 5 poziom DJ-a.":"Reach DJ level 5.","WŁASNA MARKA":"YOUR OWN BRAND","Osiągnij 10 poziom DJ-a.":"Reach DJ level 10.","GŁĘBOKO W OTCHŁANI":"DEEP IN THE ABYSS","Osiągnij 15 poziom DJ-a.":"Reach DJ level 15.","Ukończ 3 zwykłe kontrakty lub bookingi.":"Complete 3 regular gigs or bookings.","Ukończ 10 kontraktów lub bookingów.":"Complete 10 gigs or bookings.","TELEFON ZACZYNA DZWONIĆ":"THE PHONE STARTS RINGING","Zagraj z sukcesem 3 przyjęte bookingi.":"Successfully play 3 accepted bookings.","PEŁNY KALENDARZ":"FULL CALENDAR","Zagraj z sukcesem 10 bookingów.":"Successfully play 10 bookings.","Zagraj z sukcesem 25 bookingów.":"Successfully play 25 bookings.","WŁASNY RUCH":"YOUR OWN MOVE","Zorganizuj dochodowy własny event.":"Organize a profitable event of your own.","Zorganizuj 5 własnych eventów.":"Organize 5 of your own events.","PROMOTOR PEŁNĄ GĘBĄ":"FULL-TIME PROMOTER","Zorganizuj 15 własnych eventów.":"Organize 15 of your own events.","PEŁNA SALA":"FULL HOUSE","Zagraj przed publicznością liczącą co najmniej 500 osób.":"Play for a crowd of at least 500 people.","Zagraj przed publicznością liczącą co najmniej 1000 osób.":"Play for a crowd of at least 1,000 people.","Zarób łącznie 10 000 PLN.":"Earn a total of 10,000 PLN.","Zarób łącznie 50 000 PLN.":"Earn a total of 50,000 PLN.","SZEŚĆ CYFR":"SIX FIGURES","Zarób łącznie 100 000 PLN.":"Earn a total of 100,000 PLN.","Wydaj łącznie 10 000 PLN na sprzęt i produkcję własnych eventów.":"Spend a total of 10,000 PLN on gear and production for your own events.","Wydaj łącznie 50 000 PLN na sprzęt i produkcję własnych eventów.":"Spend a total of 50,000 PLN on gear and production for your own events.","100 000 W OTCHŁAŃ":"100,000 INTO THE ABYSS","Wydaj łącznie 100 000 PLN na sprzęt i produkcję własnych eventów.":"Spend a total of 100,000 PLN on gear and production for your own events.","Kup 5 płatnych przedmiotów w sklepie muzycznym.":"Buy 5 paid items in the music shop.","Kup 10 płatnych przedmiotów w sklepie muzycznym.":"Buy 10 paid items in the music shop.","MAGAZYN SPRZĘTU":"GEAR WAREHOUSE","Kup 20 płatnych przedmiotów w sklepie muzycznym.":"Buy 20 paid items in the music shop.","ROZWÓJ":"DEVELOPMENT","Zdobądź 1000 punktów reputacji miejskiej.":"Earn 1,000 city reputation points.","MIASTO CIĘ ZNA":"THE CITY KNOWS YOU","Zdobądź 5000 punktów reputacji miejskiej.":"Earn 5,000 city reputation points.","WŁASNY STYL":"YOUR OWN STYLE","PEŁNY ZESTAW":"FULL SET","Odblokuj wszystkie 7 perków DJ-skich.":"Unlock all 7 DJ perks.","Osiągnij łącznie 20 bazowych punktów w Timing + Selekcja + Crowd Control.":"Reach a total of 20 base points in Timing + Selection + Crowd Control.","PRODUKCJA 2.0":"PRODUCTION 2.0","Ochrona / stage management":"Security / stage management","Oprawa wizualna":"Visual production","Cena biletu:":"Ticket price:","TRENDY EVENTOWE":"EVENT TRENDS","📈 KARIERA":"📈 CAREER","REKORDY":"RECORDS","HISTORIA KARIERY":"CAREER HISTORY","Brak wpisów. Zagraj pierwszy set.":"No entries yet. Play your first set.","✓ QUESTY":"✓ QUESTS","QUESTY":"QUESTS","KONTAKTY":"CONTACTS","BOOKINGI":"BOOKINGS","USTAWIENIA":"SETTINGS","ODEBRANE":"CLAIMED","ODBIERZ":"CLAIM","AKTYWNY":"ACTIVE","📟 KONTAKTY":"📟 CONTACTS","📅 BOOKINGI / KALENDARZ":"📅 BOOKINGS / CALENDAR","NOWE OFERTY CO TYDZIEŃ":"NEW OFFERS EVERY WEEK","PRZYJMIJ":"ACCEPT","PRZYJMIJ NA DZIŚ":"ACCEPT FOR TODAY","▶ ZAGRAJ DZISIAJ":"▶ PLAY TODAY","✓ ZAGRANE":"✓ PLAYED","NIEUDANE":"FAILED","OFERTA WYGASŁA":"OFFER EXPIRED","RAPORT SETA":"SET REPORT","✅ SET DOWIEZIONY":"✅ SET DELIVERED","❌ SET PRZERWANY":"❌ SET ABORTED","BŁĘDY":"MISTAKES","ENERGIA":"ENERGY","Wypłata:":"Payout:","Dopasuj suwakiem swoje BPM do wartości":"Use the slider to match your BPM to the","DUŻY PARKIET / PEAK TIME":"BIG DANCEFLOOR / PEAK TIME","MIESZANA PUBLICZNOŚĆ":"MIXED CROWD","Ktoś awanturuje się przy bramce: 'Zapomniałem portfela, ale wejdę bez opaski, znam DJ-a!'. Co robisz?":"Someone is causing a scene at the door: 'I forgot my wallet, but let me in without a wristband — I know the DJ!'. What do you do?","Wpuściłeś go. Publika docenia gest, ale straciłeś bilet na bramce (-20 PLN).":"You let him in. The crowd appreciates the gesture, but you lost one ticket at the door (-20 PLN).","„Brak opaski to brak wejścia. Wołać ochronę.”":"“No wristband, no entry. Call security.”","Koleś usunięty. Trochę dymu pod klubem, ale finanse nienaruszone.":"He was removed. A little drama outside the club, but the finances are intact.","Kompromis zadziałał idealnie, bar zarobił, ekipa zadowolona!":"The compromise worked perfectly, the bar made money and the crew is happy!","Prawa kolumna basowa nagle zaczyna charczeć i dymić! Nagłośnienie siada.":"The right bass stack suddenly starts crackling and smoking! The sound system is failing.","Odetnij bas na mikserze i graj środkiem":"Cut the bass on the mixer and play through the mids","Tłum wygwizdał spadek basu, ale impreza uratowana.":"The crowd booed the loss of bass, but the party was saved.","Zrób szybki restart końcówki mocy (Ryzyko)":"Quickly restart the power amp (Risk)","Udało się! Pełna moc wróciła, tłum szaleje!":"It worked! Full power is back and the crowd goes wild!","Katastrofa! Całkowita cisza w klubie na 30 sekund.":"Disaster! Complete silence in the club for 30 seconds.","Podbij agresywnie soprany, żeby zagłuszyć usterkę":"Boost the highs aggressively to mask the failure","Uszy bolą od pisków, zaufanie publiki mocno oberwało.":"The harsh highs hurt everyone's ears and crowd trust takes a major hit.","Ochroniarz przybiega na konsolę: 'Sanepid wszedł na salę sprawdzić limity decybeli!'.":"A security guard runs to the booth: 'The inspectors came in to check the decibel limits!'.","Tłum lekko zamulił, ale kontrola minęła bez mandatu.":"The crowd lost some momentum, but the inspection ended without a fine.","Zagadaj ich przez mikrofon i rzuć darmowe kupony na bar":"Distract them on the mic and hand out free bar vouchers","Przekupstwo podziałało. Odeszli z uśmiechem (-40 PLN).":"The bribe worked. They left smiling (-40 PLN).","Ktoś z publiki wylewa pełny kubek piwa prosto na Twój mikser! Sprzęt zaczyna wariować.":"Someone in the crowd spills a full cup of beer straight onto your mixer! The gear starts going crazy.","Natychmiast przetrzyj mikser koszulką i graj dalej":"Wipe the mixer with your shirt immediately and keep playing","Przetarte w porę. Decki działają, chociaż tłum zauważył krótkie ucięcie dźwięku.":"You wiped it in time. The decks still work, though the crowd noticed a short audio cut.","Przełącz awaryjnie sygnał bezpośrednio z telefonu na nagłośnienie":"Emergency-route the signal directly from your phone to the sound system","Uratowałeś muzykę puszczając playlistę, ale miksowanie na żywo uległo zatrzymaniu.":"You saved the music with a playlist, but live mixing had to stop.","Zrób raban na mikrofonie i każ ochronie złapać sprawcę":"Make a scene on the mic and tell security to catch the culprit","Agresywny klimat na sali! Publika klaszcze z powodu dramy, ale klimat prysł.":"The room turns aggressive! The crowd applauds the drama, but the vibe is gone.","Agregat prądotwórczy nie wytrzymuje obciążenia oświetlenia i laserów. Napięcie drastycznie spada!":"The generator cannot handle the lights and lasers. Voltage drops dramatically!","Wyłącz lasery i stroboskopy – zostaw tylko muzykę":"Turn off lasers and strobes — keep only the music","W klubie zrobiło się ciemno, ale bas wciąż uderza bez przeszkód.":"The club went dark, but the bass keeps hitting without interruption.","Zaryzykuj i graj bez zmian, licząc na stabilizację":"Take the risk and keep playing, hoping the power stabilizes","Napięcie wróciło do normy! Lasery i muzyka stworzyły niesamowity pokaz.":"Voltage returned to normal! The lasers and music created an incredible show.","Pełne odcięcie prądu na 15 sekund! Ciemność i kompletna cisza na sali.":"Total power cut for 15 seconds! Darkness and complete silence in the room.","Zwolnij tempo muzyki (BPM) by odciążyć system":"Slow the music tempo (BPM) to reduce system load","Tłum zgubił rytm tańca przez nagłe i dziwne zwolnienie utworu.":"The crowd lost the groove because of the sudden, strange slowdown.","Główny promotor wpada przerażony na backstage: 'Policja stoi przed wejściem przez skargi na hałas!'.":"The main promoter rushes backstage in panic: 'The police are outside because of noise complaints!'.","Zgódź się skrócić set o 5 minut w zamian za spokój":"Agree to shorten the set by 5 minutes to keep things calm","Skróciłeś imprezę, policja odpuszcza, fani lekko zawiedzeni.":"You shortened the party, the police back off and the fans are slightly disappointed.","Zejdź z basu, podbij wokale (zakamufluj hałas na zewnątrz)":"Reduce the bass and boost vocals (mask the noise outside)","Klubowicze falują łagodniej, patrol odjeżdża zadowolony z uciszenia.":"The clubbers move more gently and the patrol leaves satisfied with the lower noise.","Zaryzykuj i graj na pełnej mocy do samego końca!":"Take the risk and play at full power until the very end!","Wlepili karę porządkową dla organizatora (-150 PLN), ale set stał się legendą.":"The organizer got fined (-150 PLN), but the set became legendary.","Odeszli bez interwencji! Tłum poczuł buntowniczy charakter nocy!":"They left without intervening! The crowd felt the rebellious spirit of the night!","🎯 [SKILL CHECK] Zachowaj spokój i przejmij kontrolę":"🎯 [SKILL CHECK] Stay calm and take control","Skill check udany. Sytuacja opanowana bez większych strat.":"Skill check succeeded. The situation is under control without major losses.","Skill check nieudany. Próba przejęcia kontroli tylko pogorszyła chaos.":"Skill check failed. Trying to take control only made the chaos worse.","NA CZYM GRASZ?":"WHAT ARE YOU PLAYING ON?","Wybierz układ interfejsu przed rozpoczęciem gry. Wersja komputerowa zachowuje dotychczasowy szeroki layout, a wersja telefoniczna używa responsywnego układu pod dotyk.":"Choose the interface layout before starting the game. Desktop keeps the wide layout, while phone mode uses a touch-friendly responsive interface.","KOMPUTER":"DESKTOP","TELEFON":"PHONE","Szeroki interfejs, klasyczny układ paneli i wygląd desktopowy.":"Wide interface, classic panel layout and desktop presentation.","Układ mobilny, większe kontrolki i elementy ustawione pod obsługę palcem.":"Mobile layout with larger controls optimized for touch.","WYBÓR ZOSTANIE ZAPAMIĘTANY. PÓŹNIEJ MOŻESZ GO ZMIENIĆ W USTAWIENIACH ⚙.":"YOUR CHOICE WILL BE SAVED. YOU CAN CHANGE IT LATER IN SETTINGS ⚙.","ZAPIS GRY":"SAVE GAME","WAŻNE:":"IMPORTANT:","regularnie zapisuj postęp. Zapis jest przechowywany lokalnie w tej przeglądarce.":"save your progress regularly. Your save is stored locally in this browser.","💾 ZAPISZ GRĘ":"💾 SAVE GAME","RESETUJ POSTĘP":"RESET PROGRESS","TRYB URZĄDZENIA":"DEVICE MODE","Aktualnie wybrany układ:":"Current layout:","🖥 / 📱 ZMIEŃ URZĄDZENIE":"🖥 / 📱 CHANGE DEVICE","🖥 KOMPUTER":"🖥 DESKTOP","📱 TELEFON":"📱 PHONE","JĘZYK":"LANGUAGE","Zmień język gry:":"Change game language:","POLSKI":"POLISH","⚙ USTAWIENIA":"⚙ SETTINGS","Ustawienia, zapis gry i tryb urządzenia":"Settings, game save and device mode","Zamknij ustawienia":"Close settings","Ustawienia są dostępne poza trwającym setem. Zakończ lub przerwij set.":"Settings are available outside an active set. Finish or abort the set first.","💾 Gra zapisana pomyślnie w pamięci tej przeglądarki.":"💾 Game saved successfully in this browser.","Na mapie wybierasz dostępny klub. Każdy rozegrany lub przerwany set przesuwa kalendarz o 1 dzień. Bookingi odblokowują się po zdobyciu 2000 punktów reputacji. Oferty bookingów odświeżają się co tydzień. Po przyjęciu booking ma konkretny dzień występu — możesz zagrać go tylko tego dnia. Jeśli go przegapisz, tracisz reputację.":"Choose an available club on the map. Every completed or aborted set advances the calendar by 1 day. Bookings unlock after reaching 2,000 reputation points. Booking offers refresh every week. Once accepted, a booking has a fixed performance day — you can play it only on that day. If you miss it, you lose reputation.","⚙ USTAWIENIA I ZAPIS GRY":"⚙ SETTINGS & GAME SAVE","Pamiętaj o regularnym zapisywaniu gry!":"Remember to save your game regularly!","Ikonę zębatki ⚙ znajdziesz w głównym menu. W USTAWIENIACH możesz ręcznie":"You can find the gear icon ⚙ in the main menu. In SETTINGS you can manually","ZAPISAĆ GRĘ":"SAVE THE GAME",", zresetować postęp oraz zmienić tryb":", reset progress and change the","⚠ PAMIĘTAJ: REGULARNIE UŻYWAJ ⚙ USTAWIENIA → 💾 ZAPISZ GRĘ. POSTĘP JEST PRZECHOWYWANY W TEJ PRZEGLĄDARCE.":"⚠ REMEMBER: REGULARLY USE ⚙ SETTINGS → 💾 SAVE GAME. PROGRESS IS STORED IN THIS BROWSER.","JAK ZAGRAĆ SET?":"HOW TO PLAY A SET?","AKTUALNY GATUNEK:":"CURRENT GENRE:","ZAKRES GATUNKU:":"GENRE RANGE:","// TAK WYGLĄDA PANEL, KTÓRYM STERUJESZ":"// THIS IS THE PANEL YOU CONTROL","WYMAGANA AKCJA: 🔥 ODPAL DROP":"REQUIRED ACTION: 🔥 DROP","Suwak powyżej możesz poruszyć — to tylko demonstracja i nie wpływa na prawdziwy set.":"You can move the slider above — it is only a demonstration and does not affect the real set.","ENERGIA = czy parkiet nadal żyje · ZAUFANIE = jak mocno publika jest po Twojej stronie":"ENERGY = whether the dancefloor is still alive · TRUST = how strongly the crowd is on your side","GATUNEK":"GENRE","SoundCloud dobiera losowy utwór z puli danego gatunku.":"SoundCloud selects a random track from the pool for the current genre.","// ZASADY KROK PO KROKU":"// STEP-BY-STEP RULES","SPRAWDŹ TARGET BPM":"CHECK TARGET BPM","Po prawej stronie widzisz":"On the right you can see",". To tempo, do którego musisz dopasować swój suwak Pitch. Każdy gatunek ma własny zakres BPM.":". This is the tempo you need to match with your Pitch slider. Each genre has its own BPM range.","DOPASUJ SUWAK BPM":"MATCH THE BPM SLIDER","Przesuń":"Move","możliwie blisko Targetu. Różnica 0–1 BPM daje najlepszą szansę na PERFECT. Różnica do 3 BPM nadal może dać dobry miks.":"as close to the Target as possible. A 0–1 BPM difference gives the best chance of a PERFECT. Up to 3 BPM can still produce a good mix.","WYKONAJ WŁAŚCIWĄ AKCJĘ":"PERFORM THE CORRECT ACTION","Panel pokaże":"The panel will show","PRZEJŚCIE":"TRANSITION",". Kliknięcie złego przycisku natychmiast karze energię tłumu, nawet jeśli timing i BPM były dobre.":". Clicking the wrong button immediately reduces crowd energy, even if your timing and BPM were correct.","TRAF W STREFĘ TIMINGU":"HIT THE TIMING ZONE","Biały marker porusza się po pasku. Kliknij wymaganą akcję, gdy marker znajduje się w":"The white marker moves along the bar. Click the required action when the marker is inside the","zaznaczonej strefie":"highlighted zone",". Cienka linia w środku oznacza idealny punkt.":". The thin line in the middle marks the perfect point.","PERFECT = 3 RZECZY NARAZ":"PERFECT = 3 THINGS AT ONCE","Poprawna akcja + BPM maks. 1 od Targetu + trafienie w strefę":"Correct action + BPM within 1 of Target + hitting the timing zone","daje najlepszy rezultat: rośnie energia i zaufanie publiki.":"gives the best result: crowd energy and trust increase.","PILNUJ PUBLIKI":"WATCH THE CROWD","Energia":"Energy","jest najważniejsza — gdy spadnie do 0, set kończy się porażką. Zaufanie pomaga budować stabilniejszą relację z publiką i reaguje na Twoje decyzje.":"is the most important — if it falls to 0, the set ends in failure. Trust helps build a more stable relationship with the crowd and reacts to your decisions.","MUZYKA SOUNDCLOUD":"SOUNDCLOUD MUSIC","Do gatunku seta dobierany jest losowy utwór z odpowiedniej puli. Jeśli przeglądarka zablokuje autoplay, kliknij":"A random track is selected from the appropriate pool for the set genre. If your browser blocks autoplay, click","bezpośrednio w odtwarzaczu pod panelem seta.":"directly in the player below the set panel.","WŁASNE EVENTY = KRYZYSY":"YOUR EVENTS = CRISES","Podczas organizowanych przez Ciebie imprez mogą wyskakiwać sytuacje kryzysowe. Wtedy set zostaje zatrzymany, a Ty musisz szybko wybrać decyzję.":"Crisis situations may appear during events you organize. The set pauses and you must quickly make a decision.","tutorial zatrzymał prawdziwy set. Marker i muzyka wystartują dopiero po kliknięciu przycisku poniżej, więc niczego nie przegapisz podczas czytania.":"the tutorial has paused the real set. The marker and music will start only after you click the button below, so you will not miss anything while reading.","TA INSTRUKCJA POJAWIA SIĘ AUTOMATYCZNIE TYLKO PRZY PIERWSZYM SECIE.":"THIS TUTORIAL APPEARS AUTOMATICALLY ONLY FOR YOUR FIRST SET.","ROZUMIEM // ZACZYNAM SET":"GOT IT // START THE SET","Kluby otwarto. Wybierz miejsce do zagrania seta.":"Clubs are open. Choose a place to play a set.","Mikser gotowy. Kontroluj zadania powyżej!":"Mixer ready. Follow the tasks above!","Gratuluje! Dotarłeś do etapu w którym zyskujesz możliwość wzięcia udziału w ostatnim już konkursie na darmowe wloty na OTCHŁAŃ X!":"Congratulations! You have reached the stage where you can enter the final contest for free tickets to OTCHŁAŃ X!","Co musisz zrobić?":"What do you need to do?","KOD KONKURSOWY":"CONTEST CODE","WYDARZENIE":"EVENT","WYŚLIJ KOD":"SEND CODE","Z osób które wyślą kod zostanie wylosowana jedna osoba która zgarnie podwójne wloty na event!":"One person will be drawn from everyone who sends the code and will win a pair of tickets to the event!","Dziękujemy za grę oraz powodzenia":"Thanks for playing and good luck","Więcej czasu na kryzysy i mocniejszy skill check. Dostępny od 11 poziomu.":"More time for crises and a stronger skill check. Available from level 11.","Tylko Ty + lokalni znajomi":"Just you + local friends","Mocny lokalny lineup":"Strong local lineup","Rozpoznawalny headliner":"Recognizable headliner","Zagraniczny headliner":"International headliner","Dodatkowy system klubowy":"Additional club sound system","Custom rig + technik":"Custom rig + technician","Minimum ochrony":"Minimum security","Standardowa ochrona":"Standard security","Bez oprawy":"No visuals","VJ + projekcje":"VJ + projections","bookingi, scena i kontakty":"bookings, scene and contacts","selekcja, UKG / Dubstep / DnB, underground":"selection, UKG / Dubstep / DnB, underground","lokale, stawki i backstage":"venues, rates and backstage","TECHNIKA":"TECHNIQUE","KARIERA":"CAREER","EVENTY":"EVENTS","EKONOMIA":"ECONOMY","INNE":"OTHER","MASZYNA DO MIKSU":"MIX MACHINE","W TRASIE":"ON THE ROAD","SCENICZNY WETERAN":"STAGE VETERAN","PIWNICE I BETON":"BASEMENTS & CONCRETE","OBIEG MIEJSKI":"CITY CIRCUIT","ROZCHWYTYWANY":"IN DEMAND","CYKL NABIERA TEMPA":"THE SERIES GAINS MOMENTUM","CZTEROCYFROWA NOC":"FOUR-DIGIT NIGHT","PIERWSZE 10K":"FIRST 10K","50K W OBROCIE":"50K IN CIRCULATION","INWESTUJ W SIEBIE":"INVEST IN YOURSELF","GRUBA INWESTYCJA":"BIG INVESTMENT","PIERWSZE UPGRADE’Y":"FIRST UPGRADES","ZNANE NAZWISKO":"KNOWN NAME","WYROBIONE CECHY":"DEVELOPED SKILLS","Odblokuj 3 perki DJ-skie.":"Unlock 3 DJ perks.","Bookingi i kalendarz":"Bookings and calendar","Questy":"Quests","PRZYJĘTY":"ACCEPTED","PRZEGAPIONY":"MISSED","WRÓĆ DO KARIERY":"BACK TO CAREER","TERMIN":"DATE","RELACJA":"RELATION","KONTAKT WYKORZYSTANY":"CONTACT USED","SPRÓBUJ KONTAKTU":"TRY CONTACT","🔒 jeszcze Cię nie zna":"🔒 doesn't know you yet","BONUSY RELACJI 2+: theo_ther +10% stawki bookingów · DOMAN +10% reputacji Underground · STACHU -25% kosztu visuali · HUS -10% wynajmu lokalu.":"RELATION BONUSES 2+: theo_ther +10% booking rates · DOMAN +10% Underground reputation · STACHU -25% visuals cost · HUS -10% venue rental.","Ten booking jest zaplanowany na dzień":"This booking is scheduled for day","Dziś jest dzień":"Today is day","Termin tego bookingu już minął.":"This booking date has already passed.","Ta osoba już miała z Tobą kontakt w tym tygodniu.":"You have already interacted with this person this week.","Ten perk odblokowuje się od poziomu":"This perk unlocks at level","Bookingi odblokują się po zdobyciu":"Bookings unlock after reaching","punktów reputacji.":"reputation points.","🔒 BOOKINGI ODBLOKUJĄ SIĘ PRZY":"🔒 BOOKINGS UNLOCK AT","Aktualnie:":"Currently:","ETAP SETA":"SET STAGE","PUBLICZNOŚĆ":"CROWD","Trendy wpływają":"Trends affect","wyłącznie na frekwencję Twoich własnych eventów":"only attendance at your own events",". Aktualny zestaw trendów obowiązuje przez jedną organizowaną imprezę. Po uruchomieniu eventu losuje się nowy zestaw na następną imprezę.":". The current trend set lasts for one organized event. After launching an event, a new trend set is rolled for the next one.","Ochrona zmniejsza ryzyko kryzysu o":"Security reduces crisis risk by","Własny Event: Otchłań":"Your Event: Otchłań","reputacja miasta":"city reputation","Reputacje v2":"v2 reputations","Zamknij raport seta":"Close set report","Zignoruj ich i odpal najmocniejszy drop!":"Ignore them and drop the hardest track!","Mandat wlepiony (-100 PLN), ale ten drop przejdzie do historii miasta!":"A fine was issued (-100 PLN), but that drop will go down in city history!","1. Kliknij przycisk \"wydarzenie\" który przekieruje Cię na facebooka, w wydarzeniu zaznacz \"wezmę udział\".":"1. Click the \"event\" button to open Facebook, then mark yourself as \"Going\" on the event.","2. Kliknij przycisk \"wyślij kod\" który przekieruje Cię na naszego Instagrama, zostaw follow oraz wyślij nam poniższy kod w DM.":"2. Click the \"send code\" button to open our Instagram, follow us and send the code below in a DM."};
+const PHRASES=[["Przyjęty booking ma konkretny termin. Możesz zagrać go tylko dokładnie w wyznaczonym dniu. Jeśli tego dnia zagrasz coś innego i kalendarz przejdzie dalej, booking zostanie oznaczony jako przegapiony i stracisz reputację.","An accepted booking has a fixed date. You can play it only on the assigned day. If you play something else that day and the calendar moves on, the booking is marked as missed and you lose reputation."],["Trendy wpływają wyłącznie na frekwencję Twoich własnych eventów. Aktualny zestaw trendów obowiązuje przez jedną organizowaną imprezę. Po uruchomieniu eventu losuje się nowy zestaw na następną imprezę.","Trends affect only attendance at your own events. The current trend set lasts for one organized event. After launching the event, a new trend set is rolled for the next one."],["Zadania rozwijają się razem z karierą. Część zalicza się automatycznie ze statystyk, a część wymaga konkretnych działań podczas setów i własnych eventów.","Objectives progress with your career. Some complete automatically from stats, while others require specific actions during sets and your own events."],["Relacje dają konkretne bonusy. Jeden skill check na osobę w każdym tygodniu kariery.","Relationships give concrete bonuses. You get one skill check per person each career week."],["Zignorowałeś problem! Chaos narasta, tłum traci cierpliwość.","You ignored the problem! Chaos grows and the crowd loses patience."],["Baza tracków przycięła się przy ładowaniu.","The track library stuttered while loading."],["Stabilne przejście, bas trzyma parkiet.","Solid transition, the bass keeps the floor moving."],["nie jest jeszcze przekonany/a. Rozwijaj","is not convinced yet. Improve"],["propozycje bookingów zostały odświeżone","booking offers have been refreshed"],["Fala dźwiękowa ucieka! Zmiana tempa na","The sound wave is drifting! Tempo changed to"],["Oferta bookingów została odświeżona.","Booking offers have been refreshed."],["Pomyłka sekwencji! Tłum gubi rytm.","Wrong sequence! The crowd loses the rhythm."],["NOWY ETAP SETA // dopasuj tempo do","NEW SET STAGE // match tempo to"],["Ochrona zmniejsza ryzyko kryzysu o","Security reduces crisis risk by"],["Przejście weszło idealnie!","Perfect transition!"],["Najwyższa energia w secie","Highest set energy"],["wszedł idealnie w punkt!","landed perfectly on the beat!"],["Zakupiono i wyposażono","Purchased and equipped"],["NOWE OFERTY CO TYDZIEŃ","NEW OFFERS EVERY WEEK"],["Własny Event: Otchłań","Your Event: Otchłań"],["Rozpoczął się tydzień","Week started"],["Przegapione bookingi","Missed bookings"],["KONTAKT WYKORZYSTANY","CONTACT USED"],["PRZEGAPIONE BOOKINGI","MISSED BOOKINGS"],["Szacowana frekwencja","Estimated attendance"],["Twój maksymalny zysk","Your maximum profit"],["GOTOWE DO ODEBRANIA","READY TO CLAIM"],["kara za nieobecność","no-show penalty"],["Pomyłka sekwencji!","Wrong sequence!"],["Rozjazd rytmiczny.","Rhythm drift."],["Największa publika","Largest crowd"],["Największa wypłata","Biggest payout"],["punktów reputacji","reputation points"],["Rozpoczynasz set","Starting set"],["SPRÓBUJ KONTAKTU","TRY CONTACT"],["reputacja miasta","city reputation"],["Zaufanie publiki","Crowd trust"],["Koszt produkcji","Production cost"],["Uciekaj z klubu","Leave the club"],["WYMAGANA AKCJA","REQUIRED ACTION"],["ZRÓB PRZEJŚCIE","TRANSITION"],["nagroda gotowa","reward ready"],["nagrody gotowe","rewards ready"],["KUPIONY SPRZĘT","GEAR BOUGHT"],["WYDANO ŁĄCZNIE","TOTAL SPENT"],["BONUSY RELACJI","RELATION BONUSES"],["OFERTA WYGASŁA","OFFER EXPIRED"],["SET DOWIEZIONY","SET DELIVERED"],["KONTAKT UDANY","CONTACT SUCCESSFUL"],["SET PRZERWANY","SET ABORTED"],["Dopasuj Pitch","Match Pitch"],["Energia tłumu","Crowd energy"],["i reputację.","and reputation."],["do odebrania","to claim"],["NOWY TYDZIEŃ","NEW WEEK"],["Reputacje v2","v2 reputations"],["Przerwij set","Abort set"],["PRZEGAPIONY","MISSED"],["RAPORT SETA","SET REPORT"],["NIE WYSZŁO","FAILED"],["Relacja z","Relationship with"],["UKOŃCZONE","COMPLETED"],["bonus rep","rep bonus"],["KALENDARZ","CALENDAR"],["Odblokuj","Unlock"],["ODEBRANE","CLAIMED"],["PRZYJĘTY","ACCEPTED"],["NIEUDANE","FAILED"],["NAGRODA","REWARD"],["ODBIERZ","CLAIM"],["RELACJA","RELATION"],["ZAGRANE","PLAYED"],["Wypłata","Payout"],["TERMIN","DATE"],["stawka","rate"]];
+let currentLanguage=localStorage.getItem(LANGUAGE_KEY)||'pl';
+let translating=false;
+let observer=null;
+const OBSERVER_CONFIG={subtree:true,childList:true,characterData:true};
+const sources=new WeakMap();
+const attrSources=new WeakMap();
+
+function dynamicTranslate(s){
+    let out=s;
+    out=out.replace(/POZIOM\s+(\d+)\s*\/\s*15/g,'LEVEL $1 / 15');
+    out=out.replace(/DZIEŃ\s+(\d+)/g,'DAY $1').replace(/TYDZIEŃ\s+(\d+)/g,'WEEK $1').replace(/TYDZ\.\s*(\d+)/g,'WK. $1');
+    out=out.replace(/dzień\s+(\d+)/gi,'day $1');
+    out=out.replace(/za\s+(\d+)\s+dni\b/gi,'in $1 days').replace(/za\s+1\s+dzień\b/gi,'in 1 day');
+    out=out.replace(/\bosób\b/gi,'people').replace(/\benergii\b/gi,'energy').replace(/\breputacji\b/gi,'reputation');
+    out=out.replace(/\bnetto\b/gi,'net');
+    out=out.replace(/Ten booking jest zaplanowany na day ([0-9]+)\. Dziś jest day ([0-9]+)\./g,'This booking is scheduled for day $1. Today is day $2.');
+    out=out.replace(/Ten booking jest zaplanowany na dzień ([0-9]+)\. Dziś jest dzień ([0-9]+)\./g,'This booking is scheduled for day $1. Today is day $2.');
+    out=out.replace(/Bookingi odblokują się po zdobyciu ([0-9]+) reputation points\./g,'Bookings unlock after reaching $1 reputation points.');
+    out=out.replace(/Bookingi odblokują się po zdobyciu ([0-9]+) punktów reputation\./g,'Bookings unlock after reaching $1 reputation points.');
+    out=out.replace(/Odblokuj ([0-9]+) reputation points/g,'Unlock at $1 reputation points');
+    out=out.replace(/Ten perk odblokowuje się od poziomu ([0-9]+)\./g,'This perk unlocks at level $1.');
+    out=out.replace(/Rozpoczął się tydzień ([0-9]+)\./g,'Week $1 has started.');
+    out=out.replace(/📅 DAY ([0-9]+)/g,'📅 DAY $1');
+    out=out.replace(/SET SKOŃCZONY SUKCESEM!/g,'SET COMPLETED SUCCESSFULLY!');
+    out=out.replace(/Zagrane numery/g,'Tracks played').replace(/Frekwencja/g,'Attendance').replace(/Zarobek/g,'Earnings');
+    out=out.replace(/Reputacja:/g,'Reputation:');
+    out=out.replace(/KONTAKT UDANY/g,'CONTACT SUCCESSFUL').replace(/NIE WYSZŁO/g,'FAILED');
+    return out;
+}
+
+function translateValue(value){
+    if(currentLanguage!=='en'||!value)return value;
+    const lead=(value.match(/^\s*/)||[''])[0],trail=(value.match(/\s*$/)||[''])[0],core=value.trim();
+    if(!core)return value;
+    if(EXACT[core]!==undefined)return lead+EXACT[core]+trail;
+    const num=core.match(/^(\d+\.\s*)(.*)$/s);
+    if(num && EXACT[num[2]]!==undefined)return lead+num[1]+EXACT[num[2]]+trail;
+    let out=core;
+    for(const [pl,en] of PHRASES) if(out.includes(pl)) out=out.split(pl).join(en);
+    out=dynamicTranslate(out);
+    return lead+out+trail;
+}
+
+function skip(el){return !!(el&&el.closest&&el.closest('script,style,#instructions-overlay'));}
+function applyTextNode(node,fromMutation=false){
+    const p=node.parentElement;if(skip(p))return;
+    if(fromMutation||!sources.has(node))sources.set(node,node.nodeValue);
+    const base=sources.get(node);
+    const wanted=currentLanguage==='en'?translateValue(base):base;
+    if(node.nodeValue!==wanted)node.nodeValue=wanted;
+}
+function applyElement(el){
+    if(!el||el.nodeType!==1||skip(el))return;
+    if(!attrSources.has(el)){
+        const x={};['title','aria-label','placeholder'].forEach(a=>{if(el.hasAttribute(a))x[a]=el.getAttribute(a)});attrSources.set(el,x);
+    }
+    const attrs=attrSources.get(el)||{};
+    for(const [a,v] of Object.entries(attrs))el.setAttribute(a,currentLanguage==='en'?translateValue(v):v);
+    for(const n of el.childNodes){if(n.nodeType===3)applyTextNode(n,false);else if(n.nodeType===1)applyElement(n);}
+}
+function updateLanguageButtons(){
+    document.getElementById('language-choice-pl')?.classList.toggle('selected',currentLanguage==='pl');
+    document.getElementById('language-choice-en')?.classList.toggle('selected',currentLanguage==='en');
+    document.getElementById('settings-language-pl')?.classList.toggle('selected',currentLanguage==='pl');
+    document.getElementById('settings-language-en')?.classList.toggle('selected',currentLanguage==='en');
+}
+function observeLanguageDom(){
+    if(observer && document.body) observer.observe(document.body,OBSERVER_CONFIG);
+}
+function applyLanguage(lang,persist=true){
+    currentLanguage=lang==='en'?'en':'pl';
+    if(persist)localStorage.setItem(LANGUAGE_KEY,currentLanguage);
+    document.documentElement.lang=currentLanguage;
+    if(observer) observer.disconnect();
+    translating=true;
+    applyElement(document.body);
+    translating=false;
+    observeLanguageDom();
+    updateLanguageButtons();
+}
+window.setGameLanguage=function(lang){applyLanguage(lang,true);};
+window.getGameLanguage=function(){return currentLanguage;};
+
+const nativeAlert=window.alert.bind(window),nativeConfirm=window.confirm.bind(window);
+window.alert=(msg)=>nativeAlert(currentLanguage==='en'?translateValue(String(msg)):msg);
+window.confirm=(msg)=>nativeConfirm(currentLanguage==='en'?translateValue(String(msg)):msg);
+
+observer=new MutationObserver(ms=>{
+    if(translating)return;
+    observer.disconnect();
+    translating=true;
+    for(const m of ms){
+        if(m.type==='characterData')applyTextNode(m.target,true);
+        for(const n of m.addedNodes){
+            if(n.nodeType===3)applyTextNode(n,false);
+            else if(n.nodeType===1)applyElement(n);
+        }
+    }
+    translating=false;
+    observeLanguageDom();
+});
+observeLanguageDom();
+
+let firstRunLanguageExplicitlyChosen=false;
+let languageChoiceRequiredNow=false;
+
+function clearStartLanguageHighlight(){
+    document.getElementById('language-choice-pl')?.classList.remove('selected');
+    document.getElementById('language-choice-en')?.classList.remove('selected');
+}
+
+document.getElementById('language-choice-pl')?.addEventListener('click',()=>{
+    firstRunLanguageExplicitlyChosen=true;
+    applyLanguage('pl',true);
+});
+document.getElementById('language-choice-en')?.addEventListener('click',()=>{
+    firstRunLanguageExplicitlyChosen=true;
+    applyLanguage('en',true);
+});
+
+const originalOpenDeviceChoice=openDeviceChoice;
+openDeviceChoice=function(firstVisit=false){
+    const languageBlock=document.getElementById('device-language-choice');
+    languageChoiceRequiredNow=!!(firstVisit||!localStorage.getItem(LANGUAGE_KEY));
+    if(languageBlock)languageBlock.style.display=languageChoiceRequiredNow?'block':'none';
+
+    // On first-run setup, neither language is preselected. The player must
+    // explicitly click POLSKI or ENGLISH before choosing the device mode.
+    if(languageChoiceRequiredNow){
+        firstRunLanguageExplicitlyChosen=false;
+        clearStartLanguageHighlight();
+    }else{
+        updateLanguageButtons();
+    }
+    return originalOpenDeviceChoice(firstVisit);
+};
+
+const originalChooseDeviceMode=chooseDeviceMode;
+chooseDeviceMode=function(mode){
+    if(languageChoiceRequiredNow && !firstRunLanguageExplicitlyChosen){
+        nativeAlert('Najpierw wybierz język / Choose language first.');
+        return;
+    }
+    if(!localStorage.getItem(LANGUAGE_KEY)){
+        nativeAlert('Najpierw wybierz język / Choose language first.');
+        return;
+    }
+    languageChoiceRequiredNow=false;
+    return originalChooseDeviceMode(mode);
+};
+
+const originalOpenSettings=openSettings;
+openSettings=function(){
+    const r=originalOpenSettings();
+    updateLanguageButtons();
+    return r;
+};
+
+runStartSequence=function(){
+    const loader=document.getElementById('game-loader');
+    const status=document.getElementById('loader-status');
+    const firstVisit=localStorage.getItem(INSTRUCTIONS_SEEN_KEY)!=='1';
+    const savedMode=localStorage.getItem(DEVICE_MODE_KEY);
+    const savedLanguage=localStorage.getItem(LANGUAGE_KEY);
+    const hasSavedMode=(savedMode==='desktop'||savedMode==='mobile');
+    const needsSetup=firstVisit || !savedLanguage || !hasSavedMode;
+
+    if(hasSavedMode)applyDeviceMode(savedMode);
+    if(savedLanguage)applyLanguage(savedLanguage,false);
+
+    setTimeout(()=>{if(status)status.innerText='ŁADOWANIE PROFILU DJ-A...';},420);
+    setTimeout(()=>{if(status)status.innerText='SYSTEM GOTOWY';},980);
+    setTimeout(()=>{
+        if(loader)loader.classList.add('is-hidden');
+        setTimeout(()=>{
+            if(needsSetup) openDeviceChoice(firstVisit);
+        },220);
+    },1450);
+};
+
+if(currentLanguage==='en')applyLanguage('en',false); else updateLanguageButtons();
+})();
+</script>
+
+
+<style id="interactive-onboarding-v40">
+/* =============================================================
+   OTCHŁAŃ v4.0 — interaktywny onboarding slide-by-slide
+   ============================================================= */
+#instructions-overlay .onboarding-window{
+    width:min(1120px,calc(100vw - 30px))!important;
+    height:min(760px,calc(100dvh - 24px))!important;
+    max-height:none!important;
+    overflow:hidden!important;
+    display:grid!important;
+    grid-template-rows:auto 3px minmax(0,1fr) auto;
+    border-color:#285a32!important;
+}
+#instructions-overlay .onboarding-head{
+    position:relative!important;
+    top:auto!important;
+    padding:17px 21px 14px!important;
+    align-items:center!important;
+}
+.onboarding-head-right{display:flex;align-items:center;gap:12px}
+.onboarding-counter{
+    color:#6d8973;
+    border:1px solid #193720;
+    background:#050b07;
+    padding:7px 10px;
+    font-size:.63rem;
+    letter-spacing:.14em;
+    white-space:nowrap;
+}
+.onboarding-progress{height:3px;background:#0b180e;overflow:hidden}
+.onboarding-progress-fill{
+    height:100%;
+    width:11.111%;
+    background:#39ff14;
+    box-shadow:0 0 14px rgba(57,255,20,.45);
+    transition:width .22s ease;
+}
+.onboarding-stage{
+    min-height:0;
+    overflow:hidden;
+    padding:20px 22px;
+    background:
+        radial-gradient(circle at 78% 20%,rgba(57,255,20,.035),transparent 28%),
+        #030705;
+}
+.onboarding-slide{
+    height:100%;
+    display:grid;
+    grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);
+    gap:22px;
+    align-items:stretch;
+    animation:onboardingIn .2s ease-out;
+}
+@keyframes onboardingIn{from{opacity:.25;transform:translateX(6px)}to{opacity:1;transform:none}}
+.onboarding-copy{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    min-width:0;
+    padding:4px 4px 4px 2px;
+}
+.onboarding-step-label{
+    color:#39ff14;
+    font-size:.62rem;
+    letter-spacing:.2em;
+    margin-bottom:8px;
+    font-weight:800;
+}
+.onboarding-copy h3{
+    color:#effff1;
+    font-size:clamp(1.35rem,2.2vw,2.2rem);
+    line-height:1.08;
+    letter-spacing:.045em;
+    margin:0 0 13px;
+}
+.onboarding-copy p{
+    color:#85958a;
+    font-size:.79rem;
+    line-height:1.65;
+    margin:0;
+    max-width:560px;
+}
+.onboarding-copy p+p{margin-top:9px}
+.onboarding-copy strong{color:#c3ffca}
+.onboarding-rule{
+    margin-top:16px;
+    padding:11px 12px;
+    background:#061009;
+    border-left:2px solid #39ff14;
+    color:#8fa695;
+    font-size:.72rem;
+    line-height:1.5;
+}
+.onboarding-demo{
+    min-height:0;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+    border:1px solid #17331e;
+    background:
+        linear-gradient(135deg,rgba(57,255,20,.025),transparent 34%),
+        #020503;
+    box-shadow:inset 0 0 35px rgba(0,0,0,.34);
+    overflow:hidden;
+}
+.onboarding-demo-inner{width:min(100%,600px)}
+.onboarding-demo-title{
+    color:#637d69;
+    font-size:.59rem;
+    letter-spacing:.17em;
+    margin-bottom:9px;
+}
+.onboarding-card{
+    background:#071009;
+    border:1px solid #1d4326;
+    padding:13px;
+}
+.onboarding-card+.onboarding-card{margin-top:9px}
+.onboarding-mini-nav{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.onboarding-mini-nav button,
+.onboarding-action,
+.onboarding-stat-btn,
+.onboarding-shop-btn,
+.onboarding-event-choice{
+    border:1px solid #285a32;
+    background:#07120a;
+    color:#b9d9bf;
+    min-height:42px;
+    padding:8px 10px;
+    font:800 .68rem 'Courier New',monospace;
+    cursor:pointer;
+}
+.onboarding-mini-nav button:hover,
+.onboarding-mini-nav button.done,
+.onboarding-action:hover,
+.onboarding-action.selected,
+.onboarding-stat-btn:hover,
+.onboarding-shop-btn:hover,
+.onboarding-event-choice:hover,
+.onboarding-event-choice.selected{
+    border-color:#39ff14;
+    color:#eaffed;
+    background:#0c1d10;
+    box-shadow:0 0 12px rgba(57,255,20,.08);
+}
+.onboarding-mini-preview{
+    margin-top:10px;
+    min-height:88px;
+    padding:13px;
+    border:1px dashed #234b2c;
+    color:#82968a;
+    font-size:.72rem;
+    line-height:1.5;
+}
+.onboarding-mini-preview strong{color:#baffc1}
+.onboarding-map{
+    position:relative;
+    height:230px;
+    overflow:hidden;
+    border:1px solid #183a20;
+    background:
+        linear-gradient(rgba(57,255,20,.055) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(57,255,20,.055) 1px,transparent 1px),
+        #020503;
+    background-size:25px 25px;
+}
+.onboarding-map:after{
+    content:'WARTA';
+    position:absolute;
+    top:12px;right:17%;
+    color:#31563a;
+    font-size:.56rem;
+    letter-spacing:.25em;
+    writing-mode:vertical-rl;
+}
+.onboarding-map-river{
+    position:absolute;right:18%;top:-10%;height:120%;width:27px;
+    transform:rotate(5deg);
+    background:rgba(57,255,20,.07);
+    border-left:1px solid rgba(57,255,20,.14);
+    border-right:1px solid rgba(57,255,20,.14);
+}
+.onboarding-map-node{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    min-width:130px;
+    border:1px solid #2d7138;
+    background:#061009;
+    color:#c6e8cc;
+    padding:10px;
+    font:800 .68rem 'Courier New',monospace;
+    cursor:pointer;
+    z-index:2;
+}
+.onboarding-map-node small{display:block;color:#68806e;font-weight:400;margin-top:4px}
+.onboarding-map-node.locked{opacity:.35;cursor:not-allowed;border-color:#26352a}
+.onboarding-map-node.selected{border-color:#39ff14;box-shadow:0 0 18px rgba(57,255,20,.17)}
+.onboarding-map-detail{
+    margin-top:9px;
+    min-height:58px;
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    align-items:center;
+    padding:10px 12px;
+    background:#061009;
+    border:1px solid #193720;
+    color:#819087;
+    font-size:.7rem;
+}
+.onboarding-map-detail strong{color:#c7ffcc}
+.onboarding-set-panel{padding:14px;background:#050b07;border:1px solid #22502b}
+.onboarding-set-top{display:flex;justify-content:space-between;gap:10px;color:#819187;font-size:.68rem;margin-bottom:12px}
+.onboarding-set-top strong{color:#c8ffcf}
+.onboarding-slider-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;font-size:.68rem;color:#829288}
+.onboarding-slider-row input{width:100%;accent-color:#39ff14}
+.onboarding-training-track{
+    position:relative;
+    height:46px;
+    margin:12px 0;
+    overflow:hidden;
+    background:#010201;
+    border:1px solid #17351f;
+}
+.onboarding-training-zone{
+    position:absolute;left:52%;width:34%;top:0;bottom:0;
+    background:rgba(57,255,20,.12);
+    border-left:1px dashed #39ff14;
+    border-right:1px dashed #39ff14;
+}
+.onboarding-training-perfect{position:absolute;left:69%;top:0;bottom:0;width:2px;background:#b7ffae}
+.onboarding-training-marker{
+    position:absolute;top:0;bottom:0;width:6px;background:white;box-shadow:0 0 10px white;
+    animation:onboardingMarker 2.6s linear infinite alternate;
+}
+@keyframes onboardingMarker{from{left:4%}to{left:94%}}
+.onboarding-set-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.onboarding-feedback{
+    min-height:32px;
+    margin-top:9px;
+    color:#87a08e;
+    font-size:.69rem;
+    line-height:1.4;
+}
+.onboarding-feedback.good{color:#a9ffb3}
+.onboarding-feedback.bad{color:#e69399}
+.onboarding-bars{display:grid;gap:13px}
+.onboarding-bar-label{display:flex;justify-content:space-between;color:#849389;font-size:.68rem;margin-bottom:5px}
+.onboarding-bar{height:16px;background:#102016;overflow:hidden;border:1px solid #1b3b23}
+.onboarding-bar>i{display:block;height:100%;background:linear-gradient(90deg,#168b36,#39ff14);transition:width .35s ease}
+.onboarding-bar.trust>i{background:linear-gradient(90deg,#426f4b,#a5ff9a)}
+.onboarding-crowd-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.onboarding-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.onboarding-stat{
+    border:1px solid #1d4326;background:#061009;padding:12px;text-align:center;
+}
+.onboarding-stat b{display:block;color:#baffc1;font-size:1.5rem;margin:5px 0}
+.onboarding-stat span{color:#7c8e81;font-size:.65rem}
+.onboarding-stat-btn{min-height:34px;padding:4px 10px;margin-top:7px}
+.onboarding-points{margin-bottom:10px;color:#8ca092;font-size:.7rem}
+.onboarding-shop-item{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.onboarding-shop-item h4{margin:0 0 5px;color:#dfffe3;font-size:.78rem}
+.onboarding-shop-item p{margin:0;color:#74877b;font-size:.67rem;line-height:1.45}
+.onboarding-shop-price{text-align:right;color:#baffc1;font-size:.72rem}
+.onboarding-shop-btn{margin-top:7px;min-width:120px}
+.onboarding-event-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.onboarding-event-box{padding:11px;background:#061009;border:1px solid #193720}
+.onboarding-event-box label{display:block;color:#667a6c;font-size:.59rem;letter-spacing:.1em;margin-bottom:7px}
+.onboarding-event-choice{width:100%;text-align:left;margin-top:5px}
+.onboarding-event-summary{
+    margin-top:9px;padding:10px 12px;border:1px dashed #2c6636;
+    color:#82968a;font-size:.68rem;line-height:1.55;
+}
+.onboarding-settings-demo{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.onboarding-settings-demo .onboarding-card{margin:0}
+.onboarding-save-button{
+    width:100%;
+    margin-top:10px;
+    border:1px solid #39ff14;
+    background:#0b2510;
+    color:#c8ffce;
+    min-height:48px;
+    font:900 .72rem 'Courier New',monospace;
+    cursor:pointer;
+}
+.onboarding-save-button.saved{background:#153b1c;box-shadow:0 0 17px rgba(57,255,20,.12)}
+.onboarding-route{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px}
+.onboarding-route span{
+    padding:10px 12px;border:1px solid #1d4326;background:#061009;color:#9caf9f;font-size:.67rem
+}
+.onboarding-route b{color:#39ff14}
+.onboarding-big-logo{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:150px;
+    margin-bottom:20px;
+}
+.onboarding-real-logo-host{
+    width:100%;
+    min-height:140px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.onboarding-real-logo-host img{
+    display:block!important;
+    width:min(92%,460px)!important;
+    height:auto!important;
+    max-height:175px!important;
+    object-fit:contain!important;
+    opacity:1!important;
+    visibility:visible!important;
+    filter:drop-shadow(0 0 18px rgba(57,255,20,.12))!important;
+}
+.onboarding-logo-error{
+    display:none;
+    color:#e25c64;
+    border:1px solid #673038;
+    background:#16080a;
+    padding:12px;
+    font-size:.72rem;
+    line-height:1.5;
+    text-align:center;
+}
+.onboarding-final-checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.onboarding-final-check{
+    padding:10px;border:1px solid #1b3e23;background:#061009;color:#82958a;font-size:.67rem;
+}
+.onboarding-final-check strong{display:block;color:#baffc1;margin-bottom:4px}
+#instructions-overlay .onboarding-footer{
+    padding:12px 18px!important;
+    min-height:68px;
+    display:grid!important;
+    grid-template-columns:auto 1fr auto;
+    align-items:center!important;
+}
+.onboarding-back{
+    border:1px solid #203f27;background:#050b07;color:#7f9585;
+    min-width:105px;padding:10px 12px;font:800 .66rem 'Courier New',monospace;cursor:pointer;
+}
+.onboarding-back:disabled{opacity:.25;cursor:default}
+.onboarding-footer-center{text-align:center;min-width:0}
+.onboarding-dots{display:flex;justify-content:center;gap:5px}
+.onboarding-dot{
+    width:18px;height:5px;border:0;background:#193720;padding:0;cursor:pointer;
+}
+.onboarding-dot.active{background:#39ff14;box-shadow:0 0 7px rgba(57,255,20,.3)}
+.onboarding-dot.done{background:#397542}
+.onboarding-dot:disabled{cursor:default}
+.onboarding-hint{margin-top:6px;color:#607366;font-size:.58rem;letter-spacing:.06em;min-height:13px}
+.onboarding-next:disabled{opacity:.3;cursor:not-allowed;filter:none}
+#instructions-overlay.first-run .instructions-close{display:none!important}
+
+@media(max-width:760px){
+    #instructions-overlay .onboarding-window{
+        width:calc(100vw - 12px)!important;
+        height:calc(100dvh - 12px)!important;
+    }
+    #instructions-overlay .onboarding-head{padding:13px 14px 10px!important}
+    #instructions-overlay .onboarding-head h2{font-size:1.15rem!important}
+    .onboarding-stage{padding:12px;overflow-y:auto}
+    .onboarding-slide{grid-template-columns:1fr;gap:11px;height:auto;min-height:100%}
+    .onboarding-copy{justify-content:flex-start;padding:0}
+    .onboarding-copy h3{font-size:1.35rem;margin-bottom:8px}
+    .onboarding-copy p{font-size:.72rem;line-height:1.5}
+    .onboarding-rule{margin-top:9px}
+    .onboarding-demo{padding:10px;min-height:300px}
+    #instructions-overlay .onboarding-footer{
+        grid-template-columns:auto 1fr auto;
+        gap:7px;
+        padding:9px!important;
+        min-height:61px;
+    }
+    .onboarding-back{min-width:75px;padding:9px 7px;font-size:.58rem}
+    .onboarding-next{padding:9px 10px!important;font-size:.58rem!important}
+    .onboarding-hint{display:none}
+    .onboarding-mini-nav{grid-template-columns:repeat(2,1fr)}
+    .onboarding-event-grid,.onboarding-settings-demo{grid-template-columns:1fr}
+    .onboarding-map{height:205px}
+}
+@media(max-height:680px) and (min-width:761px){
+    #instructions-overlay .onboarding-window{height:calc(100dvh - 12px)!important}
+    #instructions-overlay .onboarding-head{padding:10px 16px 8px!important}
+    #instructions-overlay .onboarding-head h2{font-size:1.35rem!important}
+    .onboarding-stage{padding:12px 16px}
+    .onboarding-copy h3{font-size:1.55rem;margin-bottom:8px}
+    .onboarding-copy p{font-size:.7rem;line-height:1.45}
+    .onboarding-rule{margin-top:9px;padding:8px 10px}
+    #instructions-overlay .onboarding-footer{min-height:56px;padding:7px 14px!important}
+    .onboarding-map{height:190px}
+}
+</style>
+
+<script id="interactive-onboarding-engine-v40">
+(function(){
+'use strict';
+
+const TOTAL=9;
+let index=0;
+let completed=Array(TOTAL).fill(false);
+let localState={nav:new Set(),mapSelected:false,mapStarted:false,bpm:false,crowd:false,stat:false,gearStage:0,eventPromo:false,eventLineup:false,save:false};
+completed[0]=true;
+
+function L(pl,en){ return (window.getGameLanguage?.()==='en') ? en : pl; }
+function esc(v){ return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+
+function slideData(){
+return [
+{
+ title:L('WITAJ W OTCHŁANI','WELCOME TO OTCHŁAŃ'),
+ label:L('// 01 — CEL GRY','// 01 — GAME OBJECTIVE'),
+ body:L(
+   'Zaczynasz jako początkujący DJ. Twoja kariera rośnie przez granie setów, reputację, lepszy sprzęt, kontakty, bookingi i własne eventy.',
+   'You start as a beginner DJ. Your career grows through gigs, reputation, better gear, contacts, bookings and your own events.'
+ ),
+ rule:L('Ten trening nie zmienia prawdziwych statystyk ani pieniędzy. Wszystko, co klikniesz w instrukcji, jest tylko symulacją.','This training does not change your real stats or money. Everything you click here is only a simulation.'),
+ demo:()=>`
+   <div class="onboarding-demo-inner">
+     <div class="onboarding-big-logo">
+       <div id="onboarding-real-logo" class="onboarding-real-logo-host"></div>
+       <div id="onboarding-logo-error" class="onboarding-logo-error">LOGO IMAGE COULD NOT BE LOADED</div>
+     </div>
+     <div class="onboarding-route">
+       <span>🎧 ${L('SETY','GIGS')}</span><b>→</b>
+       <span>⬆ ${L('REPUTACJA','REPUTATION')}</span><b>→</b>
+       <span>🛒 ${L('SPRZĘT','GEAR')}</span><b>→</b>
+       <span>📅 ${L('BOOKINGI','BOOKINGS')}</span><b>→</b>
+       <span>⚡ ${L('EVENTY','EVENTS')}</span>
+     </div>
+   </div>`,
+ required:false,
+ hint:L('Kliknij DALEJ, aby poznać interfejs.','Click NEXT to learn the interface.')
+},
+{
+ title:L('POZNAJ GŁÓWNE MENU','LEARN THE MAIN MENU'),
+ label:L('// 02 — INTERFEJS','// 02 — INTERFACE'),
+ body:L(
+   'Najczęściej będziesz wracać do MAPY, KARIERY i SKLEPU. Kliknij trzy przyciski po prawej, żeby zobaczyć, do czego służą.',
+   'You will most often return to MAP, CAREER and SHOP. Click the three buttons on the right to see what they are for.'
+ ),
+ rule:L('Pozostałe zakładki, m.in. Questy, Kontakty i Bookingi, rozwijają długoterminową karierę.','Other tabs, including Quests, Contacts and Bookings, support long-term career progression.'),
+ demo:()=>`
+   <div class="onboarding-demo-inner">
+     <div class="onboarding-demo-title">${L('// KLIKNIJ WSZYSTKIE 3','// CLICK ALL 3')}</div>
+     <div class="onboarding-mini-nav">
+       ${['map','career','shop'].map(k=>`<button class="${localState.nav.has(k)?'done':''}" onclick="onboardingDemoNav('${k}')">${k==='map'?'🗺 '+L('MAPA','MAP'):k==='career'?'📈 '+L('KARIERA','CAREER'):'🎧 '+L('SKLEP','SHOP')}</button>`).join('')}
+     </div>
+     <div class="onboarding-mini-preview" id="onboarding-nav-preview">${navPreview()}</div>
+   </div>`,
+ required:true,
+ hint:L('Otwórz w symulacji MAPĘ, KARIERĘ i SKLEP.','Open MAP, CAREER and SHOP in the simulation.')
+},
+{
+ title:L('MAPA, DNI I BOOKINGI','MAP, DAYS & BOOKINGS'),
+ label:L('// 03 — GDZIE GRASZ','// 03 — WHERE YOU PLAY'),
+ body:L(
+   'Na mapie wybierasz dostępny klub. Każdy rozegrany lub przerwany set przesuwa kalendarz o 1 dzień. Bookingi odblokowują się po zdobyciu 2000 punktów reputacji i mają konkretny termin.',
+   'Choose an available club on the map. Every completed or aborted set advances the calendar by 1 day. Bookings unlock at 2,000 reputation points and have fixed dates.'
+ ),
+ rule:L('Kliknij Piwnicę na Łazarzu, a potem rozpocznij próbny set.','Click Basement in Łazarz, then start the practice gig.'),
+ demo:()=>`
+   <div class="onboarding-demo-inner">
+     <div class="onboarding-map">
+       <div class="onboarding-map-river"></div>
+       <button class="onboarding-map-node ${localState.mapSelected?'selected':''}" style="left:27%;top:67%" onclick="onboardingMapPick()">${L('PIWNICA NA ŁAZARZU','BASEMENT IN ŁAZARZ')}<small>${L('wym. rep: 0','req. rep: 0')}</small></button>
+       <button class="onboarding-map-node locked" style="left:57%;top:35%" disabled>${L('KLUB // ZABLOKOWANY','CLUB // LOCKED')}<small>${L('wym. rep: 150','req. rep: 150')}</small></button>
+     </div>
+     <div class="onboarding-map-detail" id="onboarding-map-detail">
+       ${localState.mapSelected
+        ? `<div><strong>${L('PIWNICA NA ŁAZARZU','BASEMENT IN ŁAZARZ')}</strong><br>${L('Pierwsze miejsce do budowania reputacji.','Your first place to build reputation.')}</div><button class="onboarding-action" onclick="onboardingMapStart()">${L('▶ ZAGRAJ PRÓBNY SET','▶ PLAY PRACTICE GIG')}</button>`
+        : `<div>${L('Wybierz dostępny klub na mapie.','Choose an available club on the map.')}</div>`}
+     </div>
+   </div>`,
+ required:true,
+ hint:L('Najpierw klub, potem przycisk próbnego seta.','Choose the club first, then the practice-gig button.')
+},
+{
+ title:L('ZAGRAJ PRÓBNY DROP','PLAY A PRACTICE DROP'),
+ label:L('// 04 — BPM + AKCJA + TIMING','// 04 — BPM + ACTION + TIMING'),
+ body:L(
+   'Prawdziwy set sprawdza trzy rzeczy naraz: dopasowanie BPM do Targetu, właściwą akcję oraz timing. Ustaw suwak na 139–141 BPM i kliknij DROP, gdy biały marker jest w zielonej strefie.',
+   'A real set checks three things at once: BPM matching, the correct action and timing. Set the slider to 139–141 BPM and click DROP while the white marker is inside the green zone.'
+ ),
+ rule:L('PERFECT = właściwa akcja + maks. 1 BPM różnicy + trafienie w strefę.','PERFECT = correct action + no more than 1 BPM difference + hitting the zone.'),
+ demo:()=>`
+   <div class="onboarding-demo-inner">
+     <div class="onboarding-set-panel">
+       <div class="onboarding-set-top"><span>TRACK 1 / 5</span><span>Target: <strong>140 BPM</strong></span></div>
+       <div class="onboarding-slider-row">
+         <span>Pitch</span>
+         <input id="onboarding-bpm-slider" type="range" min="130" max="150" value="${window.onboardingDemoBpm||136}" oninput="onboardingBpmInput(this.value)">
+         <strong id="onboarding-bpm-value">${window.onboardingDemoBpm||136} BPM</strong>
+       </div>
+       <div class="required-action-prompt" style="margin-top:12px">🔥 ${L('WYMAGANA AKCJA: DROP','REQUIRED ACTION: DROP')}</div>
+       <div class="onboarding-training-track" id="onboarding-training-track">
+         <div class="onboarding-training-zone"></div>
+         <div class="onboarding-training-perfect"></div>
+         <div class="onboarding-training-marker" id="onboarding-training-marker"></div>
+       </div>
+       <div class="onboarding-set-actions">
+         <button class="onboarding-action" onclick="onboardingTryDrop()">🔥 DROP</button>
+         <button class="onboarding-action" onclick="onboardingWrongAction()">🎛 ${L('PRZEJŚCIE','TRANSITION')}</button>
+       </div>
+       <div class="onboarding-feedback ${localState.bpm?'good':''}" id="onboarding-set-feedback">${localState.bpm?'✓ PERFECT — '+L('tak działa podstawowa mechanika seta.','this is the core set mechanic.'):L('Dopasuj BPM i wyczekaj momentu na DROP.','Match the BPM and wait for the right moment to DROP.')}</div>
+     </div>
+   </div>`,
+ required:true,
+ hint:L('To jedyne ćwiczenie wymagające timingu — strefa jest specjalnie szeroka.','This is the only timing exercise — the zone is intentionally wide.')
+},
+{
+ title:L('CZYTAJ PARKIET','READ THE DANCEFLOOR'),
+ label:L('// 05 — ENERGIA I ZAUFANIE','// 05 — ENERGY & TRUST'),
+ body:L(
+   'Energia pokazuje, czy parkiet nadal żyje. Gdy spadnie do 0, set kończy się porażką. Zaufanie publiki pomaga utrzymać stabilniejszą reakcję tłumu.',
+   'Energy shows whether the dancefloor is still alive. If it reaches 0, the set ends in failure. Crowd trust helps keep the audience response more stable.'
+ ),
+ rule:L('Kliknij DOBRE PRZEJŚCIE i zobacz, jak reagują oba wskaźniki.','Click GOOD TRANSITION and watch both meters react.'),
+ demo:()=>crowdDemo(),
+ required:true,
+ hint:L('Możesz też najpierw kliknąć złą akcję i zobaczyć karę.','You can also click the wrong action first to see the penalty.')
+},
+{
+ title:L('ROZWIJAJ DJ-A','DEVELOP YOUR DJ'),
+ label:L('// 06 — KARIERA, STATY I QUESTY','// 06 — CAREER, STATS & QUESTS'),
+ body:L(
+   'EXP podnosi poziom DJ-a i daje punkty rozwoju. Timing ułatwia timing, Selekcja pomaga na starcie seta, a Crowd Control stabilizuje publikę. Perki korzystają z tych samych punktów.',
+   'EXP raises your DJ level and grants development points. Timing helps with timing, Selection improves the start of a set, and Crowd Control stabilizes the crowd. Perks use the same points.'
+ ),
+ rule:L('Wydaj próbny punkt na dowolną cechę. Questy są osobną zakładką z długoterminowymi nagrodami.','Spend the practice point on any stat. Quests are a separate tab with long-term rewards.'),
+ demo:()=>statsDemo(),
+ required:true,
+ hint:L('Wybierz jedną cechę i kliknij +.','Choose one stat and click +.')
+},
+{
+ title:L('SPRZĘT DAJE REALNE BONUSY','GEAR GIVES REAL BONUSES'),
+ label:L('// 07 — SKLEP I WYPOSAŻENIE','// 07 — SHOP & EQUIPMENT'),
+ body:L(
+   'Kupiony sprzęt nie jest tylko kosmetyką — wyposażone przedmioty zwiększają konkretne cechy DJ-skie. Najpierw kupujesz przedmiot, potem go wyposażasz.',
+   'Bought gear is not just cosmetic — equipped items increase specific DJ stats. First you buy an item, then you equip it.'
+ ),
+ rule:L('Kup i wyposaż próbny kontroler. Ta symulacja nie zabiera prawdziwych pieniędzy.','Buy and equip the practice controller. This simulation does not spend real money.'),
+ demo:()=>gearDemo(),
+ required:true,
+ hint:L('Dwa kliknięcia: KUP → WYPOSAŻ.','Two clicks: BUY → EQUIP.')
+},
+{
+ title:L('WŁASNY EVENT = WIĘKSZE RYZYKO','YOUR EVENT = BIGGER RISK'),
+ label:L('// 08 — PRODUKCJA I KRYZYSY','// 08 — PRODUCTION & CRISES'),
+ body:L(
+   'Po odblokowaniu własnych eventów konfigurujesz m.in. lokal, promocję, lineup, soundsystem, ochronę i oprawę. Większa produkcja może poprawić wynik, ale kosztuje więcej. Podczas własnych eventów mogą też pojawić się kryzysy.',
+   'After unlocking your own events you configure the venue, promotion, lineup, sound system, security and visuals. Bigger production can improve the result, but costs more. Crises may also happen during your own events.'
+ ),
+ rule:L('Organizacja własnych eventów wymaga 10 poziomu DJ-a. Wybierz w symulacji promocję i lineup.','Organizing your own events requires DJ level 10. Choose a promotion and lineup in the simulation.'),
+ demo:()=>eventDemo(),
+ required:true,
+ hint:L('Wybierz po jednej opcji w obu kolumnach.','Choose one option in each column.')
+},
+{
+ title:L('ZAPISUJ POSTĘP I GRAJ','SAVE YOUR PROGRESS & PLAY'),
+ label:L('// 09 — USTAWIENIA','// 09 — SETTINGS'),
+ body:L(
+   'W ⚙ USTAWIENIACH znajdziesz ręczny zapis gry, reset postępu, wybór urządzenia oraz zmianę języka. Zapis jest przechowywany lokalnie w tej przeglądarce.',
+   'In ⚙ SETTINGS you can manually save the game, reset progress, change device mode and switch language. The save is stored locally in this browser.'
+ ),
+ rule:L('Kliknij próbne ZAPISZ GRĘ. Po tym możesz wejść do właściwej gry.','Click the practice SAVE GAME button. Then you can enter the real game.'),
+ demo:()=>saveDemo(),
+ required:true,
+ hint:L('Ostatni krok: wykonaj próbny zapis.','Final step: perform a practice save.')
+}
+];
+}
+
+function navPreview(){
+ if(localState.nav.size===0) return L('Kliknij element menu, aby zobaczyć jego funkcję.','Click a menu item to see what it does.');
+ const last=[...localState.nav].slice(-1)[0];
+ const d={
+   map:L('<strong>MAPA</strong> — wybierasz miejsca, w których grasz sety.','<strong>MAP</strong> — choose places where you play gigs.'),
+   career:L('<strong>KARIERA</strong> — statystyki, rozwój DJ-a i historia.','<strong>CAREER</strong> — DJ stats, progression and history.'),
+   shop:L('<strong>SKLEP</strong> — kupujesz i wyposażasz sprzęt dający bonusy.','<strong>SHOP</strong> — buy and equip gear that gives bonuses.')
+ };
+ return d[last];
+}
+
+function crowdDemo(){
+ const e=Number(window.onboardingEnergy||58), t=Number(window.onboardingTrust||46);
+ return `<div class="onboarding-demo-inner">
+   <div class="onboarding-bars">
+     <div><div class="onboarding-bar-label"><span>${L('ENERGIA TŁUMU','CROWD ENERGY')}</span><strong>${e}%</strong></div><div class="onboarding-bar"><i style="width:${e}%"></i></div></div>
+     <div><div class="onboarding-bar-label"><span>${L('ZAUFANIE PUBLIKI','CROWD TRUST')}</span><strong>${t}%</strong></div><div class="onboarding-bar trust"><i style="width:${t}%"></i></div></div>
+   </div>
+   <div class="onboarding-crowd-actions">
+     <button class="onboarding-action" onclick="onboardingCrowd(false)">✕ ${L('ZŁA AKCJA','WRONG ACTION')}</button>
+     <button class="onboarding-action" onclick="onboardingCrowd(true)">✓ ${L('DOBRE PRZEJŚCIE','GOOD TRANSITION')}</button>
+   </div>
+   <div class="onboarding-feedback ${localState.crowd?'good':''}" id="onboarding-crowd-feedback">${localState.crowd?L('✓ Energia i zaufanie wzrosły.','✓ Energy and trust increased.'):L('Sprawdź, jak decyzje wpływają na publikę.','See how your decisions affect the crowd.')}</div>
+ </div>`;
+}
+
+function statsDemo(){
+ const timing=Number(window.onboardingTiming||1), selection=Number(window.onboardingSelection||1), control=Number(window.onboardingControl||1);
+ const pts=localState.stat?0:1;
+ return `<div class="onboarding-demo-inner">
+   <div class="onboarding-points">${L('DOSTĘPNE PUNKTY ROZWOJU','AVAILABLE DEVELOPMENT POINTS')}: <strong>${pts}</strong></div>
+   <div class="onboarding-stats">
+     ${statCard('timing','TIMING',timing)}
+     ${statCard('selection',L('SELEKCJA','SELECTION'),selection)}
+     ${statCard('control','CROWD CONTROL',control)}
+   </div>
+   <div class="onboarding-feedback ${localState.stat?'good':''}">${localState.stat?L('✓ Punkt wydany. W prawdziwej grze rozwój jest trwały po zapisaniu.','✓ Point spent. In the real game progression is permanent after saving.'):L('Wybierz specjalizację.','Choose a specialization.')}</div>
+ </div>`;
+}
+function statCard(key,name,val){
+ return `<div class="onboarding-stat"><span>${name}</span><b>${val}</b><button class="onboarding-stat-btn" ${localState.stat?'disabled':''} onclick="onboardingStat('${key}')">+</button></div>`;
+}
+
+function gearDemo(){
+ const stage=localState.gearStage;
+ return `<div class="onboarding-demo-inner">
+   <div class="onboarding-card">
+     <div class="onboarding-shop-item">
+       <div><h4>AlfaBeta DDJ-FLX2</h4><p>+3 Timing · +1 ${L('Selekcja','Selection')}<br>${L('Przykład przedmiotu ze sklepu.','Example shop item.')}</p></div>
+       <div class="onboarding-shop-price">800 PLN<br>
+         <button class="onboarding-shop-btn" onclick="onboardingGear()">${stage===0?L('KUP','BUY'):stage===1?L('WYPOSAŻ','EQUIP'):L('✓ W UŻYCIU','✓ EQUIPPED')}</button>
+       </div>
+     </div>
+   </div>
+   <div class="onboarding-feedback ${stage>=2?'good':''}">${stage===0?L('Najpierw kup przedmiot.','Buy the item first.'):stage===1?L('Teraz wyposaż kupiony sprzęt.','Now equip the purchased gear.'):L('✓ Bonusy sprzętu są aktywne dopiero po wyposażeniu.','✓ Gear bonuses become active after equipping it.')}</div>
+ </div>`;
+}
+
+function eventDemo(){
+ return `<div class="onboarding-demo-inner">
+   <div class="onboarding-event-grid">
+     <div class="onboarding-event-box">
+       <label>${L('PROMOCJA','PROMOTION')}</label>
+       <button class="onboarding-event-choice ${localState.eventPromo?'selected':''}" onclick="onboardingEventPick('promo')">📌 ${L('PLAKATY + WLEPY','POSTERS + STICKERS')}</button>
+       <button class="onboarding-event-choice" onclick="onboardingEventPick('promo')">📱 ${L('KAMPANIA SOCIAL','SOCIAL CAMPAIGN')}</button>
+     </div>
+     <div class="onboarding-event-box">
+       <label>LINEUP</label>
+       <button class="onboarding-event-choice ${localState.eventLineup?'selected':''}" onclick="onboardingEventPick('lineup')">🎚 ${L('MOCNY LOKALNY LINEUP','STRONG LOCAL LINEUP')}</button>
+       <button class="onboarding-event-choice" onclick="onboardingEventPick('lineup')">✈ ${L('ZAGRANICZNY HEADLINER','INTERNATIONAL HEADLINER')}</button>
+     </div>
+   </div>
+   <div class="onboarding-event-summary">${localState.eventPromo&&localState.eventLineup
+     ? L('<strong>✓ KONFIGURACJA GOTOWA.</strong> W prawdziwym evencie sprawdzaj koszt produkcji i prognozę frekwencji przed uruchomieniem imprezy.','<strong>✓ CONFIGURATION READY.</strong> In a real event, check production cost and attendance forecast before launching the party.')
+     : L('Dobierz elementy produkcji. Większy rozmach zwykle oznacza większy koszt i potencjał.','Choose production elements. A bigger setup usually means higher cost and higher potential.')}</div>
+ </div>`;
+}
+
+function saveDemo(){
+ return `<div class="onboarding-demo-inner">
+   <div class="onboarding-settings-demo">
+     <div class="onboarding-card"><div class="onboarding-demo-title">⚙ ${L('TRYB URZĄDZENIA','DEVICE MODE')}</div><strong>${document.body.dataset.deviceMode==='mobile'?'📱 '+L('TELEFON','PHONE'):'🖥 '+L('KOMPUTER','DESKTOP')}</strong></div>
+     <div class="onboarding-card"><div class="onboarding-demo-title">${L('JĘZYK','LANGUAGE')}</div><strong>${window.getGameLanguage?.()==='en'?'ENGLISH':'POLSKI'}</strong></div>
+   </div>
+   <button class="onboarding-save-button ${localState.save?'saved':''}" onclick="onboardingSaveDemo()">${localState.save?'✓ '+L('PRÓBNY ZAPIS WYKONANY','PRACTICE SAVE COMPLETE'):'💾 '+L('ZAPISZ GRĘ — PRÓBA','SAVE GAME — PRACTICE')}</button>
+   <div class="onboarding-feedback ${localState.save?'good':''}">${localState.save?L('✓ Gotowe. Pamiętaj o regularnym zapisie w prawdziwych Ustawieniach.','✓ Done. Remember to save regularly in the real Settings.'):L('Ten przycisk nie zapisuje ani nie zmienia prawdziwej kariery.','This button does not save or change your real career.')}</div>
+ </div>`;
+}
+
+function render(){
+ const stage=document.getElementById('onboarding-stage');
+ if(!stage) return;
+ const slides=slideData(), sl=slides[index];
+ document.getElementById('instructions-title').textContent=sl.title;
+ document.getElementById('onboarding-kicker').textContent=sl.label;
+ document.getElementById('onboarding-counter').textContent=`${String(index+1).padStart(2,'0')} / ${String(TOTAL).padStart(2,'0')}`;
+ document.getElementById('onboarding-progress-fill').style.width=`${((index+1)/TOTAL)*100}%`;
+ stage.innerHTML=`<section class="onboarding-slide">
+   <div class="onboarding-copy">
+     <div class="onboarding-step-label">${L('KROK','STEP')} ${String(index+1).padStart(2,'0')}</div>
+     <h3>${sl.title}</h3>
+     <p>${sl.body}</p>
+     <div class="onboarding-rule">${sl.rule}</div>
+   </div>
+   <div class="onboarding-demo">${sl.demo()}</div>
+ </section>`;
+
+ // Slide 1: use the exact same already-rendered logo image as the game header.
+ // No SVG/text recreation is used here.
+ if(index===0){
+   const host=document.getElementById('onboarding-real-logo');
+   const err=document.getElementById('onboarding-logo-error');
+   const source=document.querySelector('header .logo img');
+   if(host){
+     host.innerHTML='';
+     const makeDirectImage=()=>{
+       const img=new Image();
+       img.alt='OTCHŁAŃ';
+       img.referrerPolicy='no-referrer';
+       img.decoding='async';
+       img.onload=()=>{if(err)err.style.display='none';};
+       img.onerror=()=>{
+         // Second attempt through an image proxy, useful when the source blocks hotlinking.
+         if(img.dataset.proxyTried!=='1'){
+           img.dataset.proxyTried='1';
+           img.src='https://images.weserv.nl/?url=https%3A%2F%2Fzapodaj.net%2Fimages%2Fc174f1e280ee5.png';
+           return;
+         }
+         img.style.display='none';
+         if(err)err.style.display='block';
+       };
+       img.src='https://zapodaj.net/images/c174f1e280ee5.png';
+       host.appendChild(img);
+     };
+     if(source && source.complete && source.naturalWidth>0){
+       const clone=source.cloneNode(true);
+       clone.removeAttribute('onerror');
+       clone.removeAttribute('style');
+       clone.referrerPolicy='no-referrer';
+       host.appendChild(clone);
+       if(err)err.style.display='none';
+     }else{
+       makeDirectImage();
+     }
+   }
+ }
+
+ const back=document.getElementById('onboarding-back'), next=document.getElementById('onboarding-next');
+ back.textContent=L('← WSTECZ','← BACK');
+ back.disabled=index===0;
+ const can=!sl.required || completed[index] || !window.instructionsFirstRun;
+ next.disabled=!can;
+ next.textContent=index===TOTAL-1
+   ? L('WEJDŹ DO GRY →','ENTER GAME →')
+   : L('DALEJ →','NEXT →');
+ const hint=document.getElementById('onboarding-hint');
+ hint.textContent=can ? (index===TOTAL-1?L('Wszystko gotowe.','You are ready.'):L('Krok ukończony — możesz iść dalej.','Step complete — you can continue.')) : sl.hint;
+ renderDots();
+}
+
+function renderDots(){
+ const box=document.getElementById('onboarding-dots'); if(!box)return;
+ box.innerHTML=Array.from({length:TOTAL},(_,i)=>`<button class="onboarding-dot ${i===index?'active':''} ${completed[i]?'done':''}" ${window.instructionsFirstRun?'disabled':''} onclick="onboardingGo(${i})" aria-label="${i+1}"></button>`).join('');
+}
+function markDone(i=index){completed[i]=true;render();}
+function currentRequiredDone(){const sl=slideData()[index];return !sl.required||completed[index]||!window.instructionsFirstRun;}
+
+window.onboardingNext=function(){
+ if(!currentRequiredDone()) return;
+ if(index<TOTAL-1){index++;render();return;}
+ window.finishInteractiveOnboarding();
+};
+window.onboardingPrev=function(){if(index>0){index--;render();}};
+window.onboardingGo=function(i){if(window.instructionsFirstRun)return;index=Math.max(0,Math.min(TOTAL-1,Number(i)||0));render();};
+
+window.onboardingDemoNav=function(k){
+ localState.nav.add(k);
+ if(localState.nav.size>=3)completed[1]=true;
+ render();
+};
+window.onboardingMapPick=function(){localState.mapSelected=true;render();};
+window.onboardingMapStart=function(){localState.mapStarted=true;completed[2]=true;render();};
+
+window.onboardingDemoBpm=136;
+window.onboardingBpmInput=function(v){
+ window.onboardingDemoBpm=Number(v);
+ const out=document.getElementById('onboarding-bpm-value');if(out)out.textContent=`${v} BPM`;
+};
+function markerIsInZone(){
+ const marker=document.getElementById('onboarding-training-marker'), track=document.getElementById('onboarding-training-track');
+ if(!marker||!track)return true;
+ const mr=marker.getBoundingClientRect(), tr=track.getBoundingClientRect();
+ const x=((mr.left+mr.width/2)-tr.left)/tr.width*100;
+ return x>=50 && x<=88; // forgiving around the visual zone
+}
+window.onboardingTryDrop=function(){
+ const bpm=Number(window.onboardingDemoBpm||136);
+ const fb=document.getElementById('onboarding-set-feedback');
+ if(Math.abs(bpm-140)>1){
+   if(fb){fb.className='onboarding-feedback bad';fb.textContent=L('BPM jest za daleko od Target 140. Ustaw 139–141.','BPM is too far from Target 140. Set 139–141.');}
+   return;
+ }
+ if(!markerIsInZone()){
+   if(fb){fb.className='onboarding-feedback bad';fb.textContent=L('BPM jest dobre, ale timing nie. Poczekaj aż biały marker wejdzie w zieloną strefę.','BPM is correct, but the timing is not. Wait until the white marker enters the green zone.');}
+   return;
+ }
+ localState.bpm=true;completed[3]=true;render();
+};
+window.onboardingWrongAction=function(){
+ const fb=document.getElementById('onboarding-set-feedback');
+ if(fb){fb.className='onboarding-feedback bad';fb.textContent=L('To była zła akcja — panel wymaga DROP. W secie zła akcja obniża energię.','That was the wrong action — the panel requires DROP. In a real set, the wrong action lowers energy.');}
+};
+
+window.onboardingEnergy=58;window.onboardingTrust=46;
+window.onboardingCrowd=function(good){
+ if(good){window.onboardingEnergy=Math.min(100,Number(window.onboardingEnergy)+18);window.onboardingTrust=Math.min(100,Number(window.onboardingTrust)+14);localState.crowd=true;completed[4]=true;}
+ else {window.onboardingEnergy=Math.max(0,Number(window.onboardingEnergy)-16);window.onboardingTrust=Math.max(0,Number(window.onboardingTrust)-10);}
+ render();
+};
+
+window.onboardingTiming=1;window.onboardingSelection=1;window.onboardingControl=1;
+window.onboardingStat=function(k){
+ if(localState.stat)return;
+ if(k==='timing')window.onboardingTiming++;
+ if(k==='selection')window.onboardingSelection++;
+ if(k==='control')window.onboardingControl++;
+ localState.stat=true;completed[5]=true;render();
+};
+
+window.onboardingGear=function(){
+ if(localState.gearStage<2)localState.gearStage++;
+ if(localState.gearStage>=2)completed[6]=true;
+ render();
+};
+
+window.onboardingEventPick=function(type){
+ if(type==='promo')localState.eventPromo=true;
+ if(type==='lineup')localState.eventLineup=true;
+ if(localState.eventPromo&&localState.eventLineup)completed[7]=true;
+ render();
+};
+
+window.onboardingSaveDemo=function(){localState.save=true;completed[8]=true;render();};
+
+window.finishInteractiveOnboarding=function(){
+ try{
+   localStorage.setItem('otchlan_interactive_onboarding_seen_v1','1');
+   // The interactive BPM/timing slide replaces the separate first-gig wall-of-text tutorial.
+   localStorage.setItem('otchlan_first_gig_tutorial_seen_v1','1');
+ }catch(e){}
+ window.instructionsFirstRun=false;
+ const overlay=document.getElementById('instructions-overlay');
+ if(overlay)overlay.classList.remove('is-open','first-run');
+ document.body.style.overflow='';
+};
+
+function resetTutorial(firstRun){
+ index=0;
+ completed=Array(TOTAL).fill(false);completed[0]=true;
+ localState={nav:new Set(),mapSelected:false,mapStarted:false,bpm:false,crowd:false,stat:false,gearStage:0,eventPromo:false,eventLineup:false,save:false};
+ window.onboardingDemoBpm=136;window.onboardingEnergy=58;window.onboardingTrust=46;
+ window.onboardingTiming=1;window.onboardingSelection=1;window.onboardingControl=1;
+ window.instructionsFirstRun=!!firstRun;
+}
+
+const oldOpen=window.openInstructions;
+window.openInstructions=function(forceFirstRun=false){
+ if(typeof currentGig!=='undefined' && currentGig!==null && !forceFirstRun){
+   alert(L('Instrukcja jest dostępna poza trwającym setem. Zakończ lub przerwij set, aby ją otworzyć.','The guide is available outside an active set. Finish or abort the set to open it.'));
+   return;
+ }
+ resetTutorial(forceFirstRun);
+ const overlay=document.getElementById('instructions-overlay');
+ if(!overlay)return;
+ overlay.classList.toggle('first-run',!!forceFirstRun);
+ overlay.classList.add('is-open');
+ document.body.style.overflow='hidden';
+ render();
+};
+
+window.closeInstructions=function(){
+ const overlay=document.getElementById('instructions-overlay');
+ if(!overlay)return;
+ if(window.instructionsFirstRun) return; // first run must reach the final slide
+ overlay.classList.remove('is-open','first-run');
+ document.body.style.overflow='';
+};
+
+// Keep the shell language in sync whenever the tutorial is open and language
+// was changed from Settings before opening it.
+window.renderInstructionSlide=render;
+
+document.addEventListener('keydown',e=>{
+ const overlay=document.getElementById('instructions-overlay');
+ if(!overlay?.classList.contains('is-open'))return;
+ if(e.key==='ArrowRight'){e.preventDefault();window.onboardingNext();}
+ if(e.key==='ArrowLeft'){e.preventDefault();window.onboardingPrev();}
+},true);
+
+})();
+</script>
+
 </body>
 </html>
